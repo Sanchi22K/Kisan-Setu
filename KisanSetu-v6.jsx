@@ -1,9 +1,11 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Sun, Moon, Globe, ShoppingCart, MapPin, Shield, Truck, Star, Store, Search,
   ArrowRight, ArrowLeft, Sparkles, Route, CheckCircle2, AlertTriangle, Plus, Minus,
   Trash2, Lock, Scale, Boxes, Menu, X, Clock, TrendingUp, Wallet, PackageCheck,
   Users, Leaf, Check, IndianRupee, Delete, Pause, Play, Monitor, Smartphone, LayoutGrid,
+  ChevronDown, ChevronRight, Settings, Info, FileText, CloudRain, CloudSun, Cloud,
+  CloudLightning, Droplets, Bell, Sprout, Landmark
 } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -11,45 +13,75 @@ import {
 } from "recharts";
 
 /* ────────────────────────────────────────────────────────────
-   KISAN SETU v6 (SIH26033)
+   KISAN SETU (SIH26033)
    Ministry of Consumer Affairs, Food & Public Distribution
-   Three roles, two shells. All data on this screen is sample data.
+   Design System Compliant: Professional Lucide Icons, Clean Monochrome Nav,
+   Initials-based Avatars, Consolidated Rich KPI Cards with Micro-charts,
+   and Modal-driven Complex Input Flows.
    ──────────────────────────────────────────────────────────── */
 
-/* Add to index.html for the intended faces:
-   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
-   Everything degrades to a decent stack without it. */
 const FD = `"Playfair Display","Tiro Devanagari Hindi",Georgia,"Noto Serif Devanagari",serif`;
 const FB = `Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif`;
 
-/* Materials, not a colour ramp: jute paper, crate wood, slate, field, grain,
-   lorry red. Dark mode is the same yard under a lamp, not an inversion. */
+/* Cohesive Organic & Slate Base Scheme */
 const PALETTE = {
   light: {
-    bg: "#FAF6F0", surface: "#FFFFFF", raise: "#FDF3E9", peach: "#FCE9D6",
-    ink: "#2C2D3F", muted: "#6E6B7B", line: "#EADFD2",
-    green: "#2E6F4E", greenDeep: "#1F4E37", greenSoft: "#E3EFE7", greenTop: "#3E8A62",
-    gold: "#C9821A", goldBright: "#F5A623", goldSoft: "#FCEBD0",
-    red: "#E2603A", redSoft: "#FFE7DE", coral: "#FF7F50",
-    violet: "#5A51E0", violetSoft: "#EAE8FF",
-    wood: "#C98B4B", woodDark: "#9A6430", woodLit: "#DDA76A",
-    slate: "#2C2D3F", chalk: "#FAF6F0", cast: "rgba(125,92,56,.24)",
-    slab: ["#E3CDB6", "#D8BCA3", "#CBAB91", "#BE9B80"],
-    slabTop: ["#F0DFCE", "#E7D0BC", "#DCC2AB", "#D0B39A"],
+    bg: "#F9F8F5", surface: "#FFFFFF", raise: "#F2EFE9", peach: "#EFEBE3",
+    ink: "#1E232A", muted: "#64707D", line: "#E5DFD5",
+    green: "#245A3C", greenDeep: "#183F29", greenSoft: "#EAF3ED", greenTop: "#2F724C",
+    gold: "#A86D12", goldBright: "#D98E18", goldSoft: "#F9F2E3",
+    red: "#C84B31", redSoft: "#FCECE8", coral: "#D65A31",
+    violet: "#4740B8", violetSoft: "#EEEDFA",
+    wood: "#B8834A", woodDark: "#855829", woodLit: "#CC995E",
+    slate: "#1E232A", chalk: "#F9F8F5", cast: "rgba(30,35,42,.08)",
+    slab: ["#DDD5C7", "#D0C6B5", "#C2B6A2", "#B3A690"],
+    slabTop: ["#EBE4D8", "#DFD6C7", "#D2C7B6", "#C4B8A5"],
   },
   dark: {
-    bg: "#1A1512", surface: "#241D18", raise: "#2C2420", peach: "#3A2A1D",
-    ink: "#F3EAE0", muted: "#A3968A", line: "#3A2F27",
-    green: "#5FB086", greenDeep: "#3E8A62", greenSoft: "#1E2A23", greenTop: "#6FC49A",
-    gold: "#F5A623", goldBright: "#F5A623", goldSoft: "#332610",
-    red: "#FF9670", redSoft: "#3A2119", coral: "#FF9670",
-    violet: "#9A94FF", violetSoft: "#232145",
-    wood: "#8A5E33", woodDark: "#5F3F22", woodLit: "#A87944",
-    slate: "#15110E", chalk: "#EFE3D4", cast: "rgba(0,0,0,.6)",
-    slab: ["#4E3E30", "#473929", "#403322", "#392D1E"],
-    slabTop: ["#61503F", "#584737", "#4F402F", "#463928"],
+    bg: "#131619", surface: "#1C2126", raise: "#242B32", peach: "#2C343D",
+    ink: "#F0F3F6", muted: "#8E9BA8", line: "#2E3740",
+    green: "#4E9F6E", greenDeep: "#326F4A", greenSoft: "#18281E", greenTop: "#62BF87",
+    gold: "#D98E18", goldBright: "#F2A732", goldSoft: "#2D2415",
+    red: "#E26D54", redSoft: "#351F1A", coral: "#E26D54",
+    violet: "#8B84F0", violetSoft: "#222040",
+    wood: "#8A643B", woodDark: "#5C4123", woodLit: "#A87D4E",
+    slate: "#111417", chalk: "#E6EAEE", cast: "rgba(0,0,0,.5)",
+    slab: ["#38424D", "#313B45", "#2A323C", "#232A32"],
+    slabTop: ["#45515E", "#3E4955", "#37414C", "#303943"],
   },
 };
+
+/* ── helpers & avatar ──────────────────────────────────────── */
+function getInitials(name) {
+  if (!name) return "KS";
+  const str = Array.isArray(name) ? name[0] : name;
+  const parts = str.trim().split(" ");
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function InitialsAvatar({ id, name, size = 36, c, verified }) {
+  const farmer = id ? FARMERS.find(f => f.id === id) : null;
+  const displayName = name || (farmer ? farmer.name[0] : "User");
+  const initials = getInitials(displayName);
+  return (
+    <div className="relative inline-flex shrink-0 items-center justify-center font-bold select-none"
+      style={{
+        width: size, height: size, borderRadius: 8,
+        background: c.raise, border: `1px solid ${c.line}`,
+        color: c.ink, fontSize: Math.max(11, Math.round(size * 0.38)),
+        letterSpacing: "0.02em"
+      }}>
+      {initials}
+      {verified && (
+        <span className="absolute -bottom-1 -right-1 grid place-items-center rounded-full"
+          style={{ width: size * 0.38, height: size * 0.38, background: c.green, color: "#fff" }}>
+          <Check size={size * 0.24} strokeWidth={3} />
+        </span>
+      )}
+    </div>
+  );
+}
 
 /* ── language ──────────────────────────────────────────────── */
 const S = {
@@ -212,9 +244,18 @@ const S = {
   farmer_more: ["Farmer earns more, you pay less", "किसान को ज़्यादा, आपको कम"],
   nearby_farms: ["Farms near you", "आपके पास के खेत"],
   categories: ["What are you looking for", "आप क्या ढूँढ रहे हैं"],
+  quick_pick: ["Quick Categories", "श्रेणियाँ"],
+  fresh_today: ["Fresh From The Harvest", "आज की ताज़ा कटाई"],
+  our_farmers: ["Nearby Farm Stores", "आस-पास के किसान"],
+  deals: ["Top Direct Savings", "सीधी बचत के सौदे"],
   see_all_b: ["See all", "सब देखें"],
   namaste: ["Namaste", "नमस्ते"],
   back: ["Back", "वापस"],
+  weather_h: ["Weather Forecast", "मौसम का पूर्वानुमान"],
+  weather_5day: ["5-day forecast →", "5-दिन का पूर्वानुमान →"],
+  smart_alerts: ["Smart Notifications", "स्मार्ट अलर्ट व सूचनाएँ"],
+  unread_alerts: ["new", "नए"],
+  mark_all_read: ["Mark all read", "सभी पढ़े"],
 };
 
 const FARMERS = [
@@ -398,9 +439,23 @@ const ART_OF = { p1:"tomato", p2:"onion", p3:"leafy", p4:"potato", p5:"cauliflow
   p7:"rice", p8:"mango", p9:"guava", p10:"okra", p11:"chilli", p12:"banana", p13:"milk",
   p14:"ghee", p15:"bajra", p16:"turmeric", p17:"dal", p18:"amla" };
 
-function Produce({ id, size = 44 }) {
+function Produce({ id, size = 44, bg = "white", vector = false, className = "" }) {
+  const [error, setError] = useState(false);
+  const folder = bg === "beige" ? "beige" : "white";
+  if (!vector && !error && id) {
+    return (
+      <img
+        src={`/produce/${folder}/${id}.jpg`}
+        alt={id}
+        onError={() => setError(true)}
+        className={"object-contain " + className}
+        style={{ width: size, height: size, maxWidth: "100%", maxHeight: "100%", display: "block" }}
+        loading="lazy"
+      />
+    );
+  }
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" className={className}>
       {ART[ART_OF[id]] || ART.leafy}
     </svg>
   );
@@ -714,58 +769,37 @@ const Stencil = ({ c, children, col }) => (
   </div>
 );
 
-const H = ({ c, children, sub, className = "" }) => (
-  <div className={"mb-4 " + className}>
-    <h2 className="text-xl sm:text-2xl" style={{ fontFamily: FD, color: c.ink, fontWeight: 700, letterSpacing: "-.02em" }}>
-      {children}
-    </h2>
-    {sub && <p className="mt-1 text-sm" style={{ color: c.muted, maxWidth: "58ch" }}>{sub}</p>}
-  </div>
-);
-
-/* ── the argument of the project, extruded ─────────────────── */
-/* Farmer's slab stands at the front, full height and solid. Every hand after
-   it is shorter, greyer and further back, so the loss is a shape not a number. */
+/* Price Journey Rail - Data Visualization representing producer & intermediary realization */
 function PriceRail({ c, t, p, small }) {
   const parts = chain(p), total = p.retail;
-  const hs = small ? [30, 25, 21, 18, 15] : [58, 48, 40, 33, 27];
+  const hs = small ? [24, 20, 18, 16, 14] : [48, 40, 34, 28, 24];
   return (
     <div>
-      <div className="flex w-full items-end" style={{ paddingTop: small ? 8 : 12 }}>
+      <div className="flex w-full items-end gap-1" style={{ paddingTop: small ? 6 : 10 }}>
         {parts.map((s, i) => {
-          const face = s.farmer ? c.green : c.slab[i - 1];
-          const top = s.farmer ? c.greenTop : c.slabTop[i - 1];
+          const face = s.farmer ? c.green : c.slab[i - 1] || c.raise;
           const w = (s.v / total) * 100;
           return (
-            <div key={i} style={{ width: `${w}%`, height: hs[i], position: "relative" }}>
-              <div style={{
-                position: "absolute", top: -9, left: 0, right: 0, height: 9, background: top,
-                transform: "skewX(-45deg)", transformOrigin: "bottom left",
-              }} />
-              <div style={{
-                position: "absolute", inset: 0, background: face,
-                backgroundImage: s.farmer ? "none"
-                  : `repeating-linear-gradient(135deg, rgba(0,0,0,.13) 0 4px, transparent 4px 9px)`,
-                boxShadow: `inset -1px 0 0 rgba(0,0,0,.16)`,
-              }} />
-              {w > 11 && !small && (
+            <div key={i} className="rounded-t-sm relative overflow-hidden"
+              style={{ width: `${w}%`, height: hs[i], background: face }}>
+              {w > 12 && !small && (
                 <span className="absolute inset-0 grid place-items-center text-xs font-bold"
-                  style={{ ...num, color: s.farmer ? "#fff" : "rgba(0,0,0,.5)" }}>{inr1(s.v)}</span>
+                  style={{ ...num, color: s.farmer ? "#fff" : c.ink }}>{inr1(s.v)}</span>
               )}
             </div>
           );
         })}
       </div>
       {!small && (
-        <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-5">
+        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-5">
           {parts.map((s, i) => (
             <div key={i}>
               <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5" style={{ background: s.farmer ? c.green : c.slab[i - 1] }} />
+                <span className="h-2 w-2 rounded-full" style={{ background: s.farmer ? c.green : c.slab[i - 1] || c.muted }} />
                 <span className="text-xs" style={{ color: c.muted }}>{t(s.k)}</span>
               </div>
-              <div className="mt-0.5 text-sm font-bold" style={{ ...num, color: s.farmer ? c.green : c.ink }}>
-                {inr1(s.v)}<span className="ml-1 font-normal" style={{ color: c.muted }}>
+              <div className="mt-0.5 text-xs font-bold" style={{ ...num, color: s.farmer ? c.green : c.ink }}>
+                {inr1(s.v)}<span className="ml-1 font-normal text-muted" style={{ color: c.muted }}>
                   {Math.round((s.v / total) * 100)}%</span>
               </div>
             </div>
@@ -776,60 +810,99 @@ function PriceRail({ c, t, p, small }) {
   );
 }
 
-/* ── escrow, drawn as a box with a lid ─────────────────────── */
-function LockBox({ c, open, size = 96 }) {
+/* ── Account Popover Menu (Rule 4: Secondary items in popover) ── */
+function AccountPopover({ c, t, lang, setLang, dark, setDark, role, pick, addr, setAddr, openLegal, close }) {
+  const popRef = useRef(null);
+  useEffect(() => {
+    const handleDown = e => {
+      if (popRef.current && !popRef.current.contains(e.target)) close();
+    };
+    document.addEventListener("mousedown", handleDown);
+    return () => document.removeEventListener("mousedown", handleDown);
+  }, [close]);
+
+  const me = FARMERS.find(f => f.id === ME);
+
   return (
-    <svg width={size} height={size * 0.78} viewBox="0 0 100 78" aria-hidden="true">
-      <g style={{ transition: "transform .5s cubic-bezier(.3,.8,.3,1)", transformOrigin: "14% 44%", transform: open ? "rotate(-104deg)" : "rotate(0deg)" }}>
-        <rect x="12" y="22" width="76" height="12" rx="2" fill={c.woodDark} />
-        <rect x="12" y="22" width="76" height="5" rx="2" fill={c.wood} />
-      </g>
-      <rect x="16" y="30" width="68" height="20" rx="2" fill={open ? c.greenSoft : "transparent"} />
-      {open && <>
-        <rect x="26" y="32" width="20" height="12" rx="1.5" fill={c.green} transform="rotate(-7 36 38)" />
-        <rect x="50" y="34" width="20" height="12" rx="1.5" fill={c.greenDeep} transform="rotate(5 60 40)" />
-      </>}
-      <rect x="12" y="34" width="76" height="34" rx="3" fill={c.wood} />
-      <rect x="12" y="34" width="76" height="34" rx="3" fill="none"
-        stroke={c.woodDark} strokeWidth="2" />
-      <path d="M12 46h76M12 56h76" stroke={c.woodDark} strokeWidth="1.5" opacity=".55" />
-      <rect x="42" y="40" width="16" height="16" rx="2" fill={open ? c.green : c.slate} />
-      {open
-        ? <path d="M46 48l3 3 6-6" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        : <><circle cx="50" cy="47" r="2.4" fill={c.chalk} /><rect x="49" y="47" width="2" height="5" fill={c.chalk} /></>}
-    </svg>
+    <div className="fixed inset-0 z-50 flex items-start justify-end p-3 sm:p-5" style={{ background: "rgba(0,0,0,0.3)" }}>
+      <div ref={popRef} className="w-full max-w-xs rounded-xl p-4 shadow-2xl"
+        style={{ background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
+        <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: c.line }}>
+          <div className="flex items-center gap-2.5">
+            <InitialsAvatar id={role === "farmer" ? ME : null} name={role === "farmer" ? me.name[lang] : "Buyer Account"} size={36} c={c} verified={role === "farmer"} />
+            <div>
+              <div className="text-sm font-bold" style={{ color: c.ink }}>
+                {role === "farmer" ? me.name[lang] : role === "retailer" ? (lang === 0 ? "Retailer Shop" : "खुदरा दुकान") : (lang === 0 ? "Household Buyer" : "घरेलू खरीदार")}
+              </div>
+              <div className="text-xs" style={{ color: c.muted }}>{addr}</div>
+            </div>
+          </div>
+          <button onClick={close} className="p-1 rounded-md" style={{ color: c.muted }}><X size={16} /></button>
+        </div>
+
+        {/* Role Selector */}
+        <div className="mt-3">
+          <div className="text-xs font-semibold uppercase mb-1.5" style={{ color: c.muted, letterSpacing: "0.08em" }}>
+            {lang === 0 ? "Active Profile" : "सक्रिय प्रोफ़ाइल"}
+          </div>
+          <div className="space-y-1">
+            {[
+              { id: "farmer", label: lang === 0 ? "Farmer (Ramesh Kumar)" : "किसान (रमेश कुमार)", icon: Leaf },
+              { id: "consumer", label: lang === 0 ? "Household Consumer" : "घरेलू खरीदार", icon: Users },
+              { id: "retailer", label: lang === 0 ? "Bulk Retailer" : "थोक दुकानदार", icon: Boxes },
+            ].map(r => (
+              <button key={r.id} onClick={() => { pick(r.id); close(); }}
+                className="flex w-full items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold"
+                style={{
+                  background: role === r.id ? c.greenSoft : "transparent",
+                  color: role === r.id ? c.green : c.ink,
+                  border: `1px solid ${role === r.id ? c.green : "transparent"}`
+                }}>
+                <span className="flex items-center gap-2">
+                  <r.icon size={14} /> {r.label}
+                </span>
+                {role === r.id && <Check size={14} />}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Preferences */}
+        <div className="mt-4 pt-3 border-t space-y-2 text-xs" style={{ borderColor: c.line }}>
+          <div className="flex items-center justify-between py-1">
+            <span style={{ color: c.muted }}>{lang === 0 ? "Language" : "भाषा"}</span>
+            <button onClick={() => setLang(lang === 0 ? 1 : 0)} className="px-2.5 py-1 rounded-md font-bold"
+              style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }}>
+              {lang === 0 ? "हिंदी" : "English"}
+            </button>
+          </div>
+          <div className="flex items-center justify-between py-1">
+            <span style={{ color: c.muted }}>{lang === 0 ? "Theme" : "थीम"}</span>
+            <button onClick={() => setDark(!dark)} className="px-2.5 py-1 rounded-md font-semibold flex items-center gap-1.5"
+              style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }}>
+              {dark ? <Sun size={13} /> : <Moon size={13} />}
+              {dark ? (lang === 0 ? "Light Mode" : "लाइट") : (lang === 0 ? "Dark Mode" : "डार्क")}
+            </button>
+          </div>
+        </div>
+
+        {/* Secondary Links & Legal */}
+        <div className="mt-3 pt-3 border-t space-y-1.5 text-xs" style={{ borderColor: c.line }}>
+          <button onClick={() => { openLegal("privacy"); close(); }} className="flex items-center gap-2 w-full text-left py-1" style={{ color: c.muted }}>
+            <Shield size={13} /> {lang === 0 ? "Privacy Policy (DPDP Act 2023)" : "निजता नीति"}
+          </button>
+          <button onClick={() => { openLegal("terms"); close(); }} className="flex items-center gap-2 w-full text-left py-1" style={{ color: c.muted }}>
+            <FileText size={13} /> {lang === 0 ? "Terms of Trade & Escrow" : "नियम और शर्तें"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
-
-Object.assign(S, {
-  greet_sub: ["6 farms listing today, all within 50 km of Ghaziabad 201009.", "आज 6 खेतों की सूची, सभी ग़ाज़ियाबाद 201009 से 50 किमी के भीतर।"],
-  quick_pick: ["Quick pick", "झट से चुनें"],
-  shop_now: ["Shop now", "अभी ख़रीदें"],
-  view_cart: ["View cart", "कार्ट देखें"],
-  checkout: ["Checkout", "आगे बढ़ें"],
-  items_word: ["items", "चीज़ें"],
-  track: ["Track", "देखें"],
-  tab_cart: ["Cart", "कार्ट"],
-  fresh_today: ["Picked today", "आज की कटाई"],
-  deals: ["Biggest savings", "सबसे ज़्यादा बचत"],
-  our_farmers: ["Meet the farmers", "किसानों से मिलिए"],
-  empty_sub: ["Your basket is waiting to be filled.", "आपकी टोकरी भरने का इंतज़ार कर रही है।"],
-  step_of: ["of", "में से"],
-  sell_now: ["Put on sale", "बिक्री पर लगाएँ"],
-  quick_actions: ["Quick actions", "झट से"],
-  new_orders: ["New orders", "नए ऑर्डर"],
-  see_route: ["See route", "रास्ता देखें"],
-  total_word: ["Total", "कुल"],
-});
-
-/* ════════════════════════════════════════════════════════════
-   APP SHELL. Phone first. On a laptop it sits inside a handset
-   so a judge sees the thing as it would actually be used.
-   ════════════════════════════════════════════════════════════ */
-const RAD = { card: 10, chip: 8, sheet: 12 };
-const lift = c => `0 1px 2px ${c.cast}, 0 10px 24px -16px ${c.cast}`;
-const liftHi = c => `0 2px 4px ${c.cast}, 0 18px 34px -18px ${c.cast}`;
+const RAD = { card: 12, chip: 8, sheet: 14 };
+const lift = c => `0 1px 2px ${c.cast}, 0 8px 16px -8px ${c.cast}`;
+const liftHi = c => `0 2px 4px ${c.cast}, 0 16px 28px -12px ${c.cast}`;
 
 function StatusBar({ c }) {
   return (
@@ -855,92 +928,74 @@ function StatusBar({ c }) {
   );
 }
 
-/* Top bar. Two shapes: a home bar with the location, and a
-   back bar for anything pushed on top of a tab. */
-function AppBar({ c, t, lang, setLang, dark, setDark, title, back, addr, role, openGate, right }) {
+/* Top bar. Clean & functional, with secondary menu popover */
+function AppBar({ c, t, lang, setLang, dark, setDark, title, back, addr, role, openGate, right, pick, openLegal }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <div className="sticky top-0 z-30" style={{ background: c.bg }}>
+    <div className="sticky top-0 z-30" style={{ background: c.bg, borderBottom: `1px solid ${c.line}` }}>
       <StatusBar c={c} />
-      <div className="flex items-center gap-2 px-4 pb-2 pt-2">
+      <div className="flex items-center gap-2 px-4 pb-2.5 pt-2">
         {back ? (
           <>
-            <button onClick={back} className="grid shrink-0 place-items-center rounded-md"
-              style={{ width: 38, height: 38, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-              <ArrowLeft size={18} />
+            <button onClick={back} className="grid shrink-0 place-items-center rounded-lg"
+              style={{ width: 36, height: 36, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
+              <ArrowLeft size={16} />
             </button>
-            <span className="truncate" style={{ fontFamily: FD, fontWeight: 700, fontSize: 19, color: c.ink }}>{title}</span>
+            <span className="truncate" style={{ fontFamily: FD, fontWeight: 700, fontSize: 18, color: c.ink }}>{title}</span>
           </>
         ) : (
           <>
-            <Logo size={30} green={c.green} gold={c.goldBright} />
+            <Logo size={28} green={c.green} gold={c.goldBright} />
             <div className="min-w-0">
-              <div className="flex items-center gap-1" style={{ color: c.muted, fontSize: 11 }}>
+              <div className="flex items-center gap-1 text-xs" style={{ color: c.muted }}>
                 <MapPin size={11} style={{ color: c.green }} />{addr}
               </div>
-              <div style={{ fontFamily: FD, fontWeight: 700, fontSize: 17, color: c.ink, lineHeight: 1.1 }}>{title}</div>
+              <div style={{ fontFamily: FD, fontWeight: 700, fontSize: 16, color: c.ink, lineHeight: 1.1 }}>{title}</div>
             </div>
           </>
         )}
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
           {right}
-          <button onClick={() => setLang(lang === 0 ? 1 : 0)} className="grid place-items-center rounded-md text-xs font-bold"
-            style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-            {lang === 0 ? "अ" : "A"}
+          <button onClick={() => setMenuOpen(true)} className="flex items-center gap-1.5 rounded-lg px-2 py-1"
+            style={{ background: c.surface, border: `1px solid ${c.line}` }}>
+            <InitialsAvatar id={role === "farmer" ? ME : null} size={26} c={c} />
+            <ChevronDown size={13} style={{ color: c.muted }} />
           </button>
-          <button onClick={() => setDark(!dark)} className="grid place-items-center rounded-md"
-            style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-          {openGate && (
-            <button onClick={openGate} className="grid place-items-center rounded-md overflow-hidden"
-              style={{ width: 34, height: 34, border: `1px solid ${c.line}` }}>
-              {role === "farmer" ? <FarmerFace id={ME} size={32} c={c} />
-                : <span className="grid h-full w-full place-items-center" style={{ background: c.violetSoft, color: c.violet }}>
-                    <Users size={15} />
-                  </span>}
-            </button>
-          )}
         </div>
       </div>
+
+      {menuOpen && (
+        <AccountPopover c={c} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark}
+          role={role} pick={pick} addr={addr} setAddr={() => {}} openLegal={openLegal} close={() => setMenuOpen(false)} />
+      )}
     </div>
   );
 }
 
-/* Bottom tabs. The active one gets a marigold dot above it,
-   the same eight-petal shape used in the block print. */
+/* Bottom tabs */
 function TabBar({ c, tabs, view, go, cartCount }) {
   return (
     <div className="fixed bottom-0 left-1/2 z-40 w-full" style={{ maxWidth: 430, transform: "translateX(-50%)" }}>
       <div style={{
         background: c.surface, borderTop: `1px solid ${c.line}`,
-        boxShadow: `0 -8px 24px -18px ${c.cast}`,
+        boxShadow: `0 -4px 16px -8px ${c.cast}`,
         paddingBottom: "env(safe-area-inset-bottom)",
       }}>
-        <BlockPrint c={c} col={c.wood} op={.22} h={10} />
         <div className="flex">
           {tabs.map(([id, k, Ic]) => {
             const on = view === id;
             return (
-              <button key={id} onClick={() => go(id)} className="relative flex-1 pb-2 pt-1.5">
-                <span className="relative mx-auto grid place-items-center" style={{ width: 34, height: 26 }}>
-                  <Ic size={20} style={{ color: on ? c.green : c.muted }} />
+              <button key={id} onClick={() => go(id)} className="relative flex-1 pb-2 pt-2 text-center">
+                <span className="relative mx-auto grid place-items-center" style={{ width: 32, height: 24 }}>
+                  <Ic size={18} style={{ color: on ? c.green : c.muted }} />
                   {id === "cart" && cartCount > 0 && (
-                    <span className="absolute -right-1 -top-1 grid place-items-center rounded-md text-xs font-bold"
-                      style={{ background: c.coral, color: "#fff", minWidth: 16, height: 16, fontSize: 10 }}>{cartCount}</span>
+                    <span className="absolute -right-1 -top-1 grid place-items-center rounded-full text-xs font-bold"
+                      style={{ background: c.green, color: "#fff", minWidth: 16, height: 16, fontSize: 10 }}>{cartCount}</span>
                   )}
                 </span>
-                <span className="mt-0.5 block text-center" style={{ fontSize: 10.5, fontWeight: on ? 700 : 500, color: on ? c.green : c.muted }}>
+                <span className="mt-0.5 block text-center" style={{ fontSize: 11, fontWeight: on ? 700 : 500, color: on ? c.green : c.muted }}>
                   {k}
                 </span>
-                {on && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" className="absolute left-1/2 top-0" style={{ transform: "translate(-50%,-6px)" }}>
-                    {[0, 45, 90, 135, 180, 225, 270, 315].map(a => (
-                      <ellipse key={a} cx="7" cy="7" rx="1.1" ry="2.6" fill={c.goldBright}
-                        transform={`rotate(${a} 7 7)`} />
-                    ))}
-                    <circle cx="7" cy="7" r="1.5" fill={c.coral} />
-                  </svg>
-                )}
               </button>
             );
           })}
@@ -952,12 +1007,11 @@ function TabBar({ c, tabs, view, go, cartCount }) {
 
 function Phone({ c, children }) {
   return (
-    <div className="flex min-h-screen justify-center sm:py-7"
-      style={{ background: c.bg, backgroundImage: `radial-gradient(circle at 50% 0%, ${c.peach} 0%, transparent 55%)` }}>
-      <div className="relative w-full sm:rounded-3xl sm:border-8"
+    <div className="flex min-h-screen justify-center sm:py-6" style={{ background: c.bg }}>
+      <div className="relative w-full sm:rounded-2xl sm:border"
         style={{
-          maxWidth: 430, background: c.bg, borderColor: "#15151A",
-          boxShadow: liftHi(c), overflow: "hidden",
+          maxWidth: 430, background: c.bg, borderColor: c.line,
+          boxShadow: liftHi(c),
         }}>
         {children}
       </div>
@@ -975,13 +1029,12 @@ const Sheet = ({ c, children, className = "", style = {}, tone }) => (
 
 function SectionHead({ c, title, action, onAction }) {
   return (
-    <div className="mb-3 flex items-end gap-3 px-4">
+    <div className="mb-2.5 flex items-end gap-3 px-4">
       <div className="min-w-0">
-        <h2 className="truncate" style={{ fontFamily: FD, fontWeight: 700, fontSize: 18, color: c.ink }}>{title}</h2>
-        <div style={{ width: 46, marginTop: 3 }}><BlockPrint c={c} col={c.wood} op={.5} h={9} /></div>
+        <h2 className="truncate" style={{ fontFamily: FD, fontWeight: 700, fontSize: 17, color: c.ink }}>{title}</h2>
       </div>
       {action && (
-        <button onClick={onAction} className="ml-auto shrink-0 text-xs font-bold" style={{ color: c.green }}>{action}</button>
+        <button onClick={onAction} className="ml-auto shrink-0 text-xs font-semibold" style={{ color: c.green }}>{action}</button>
       )}
     </div>
   );
@@ -991,43 +1044,41 @@ const Pill = ({ c, tone = "green", children, className = "" }) => {
   const m = {
     green: [c.greenSoft, c.green], gold: [c.goldSoft, c.gold], coral: [c.redSoft, c.red],
     violet: [c.violetSoft, c.violet], flat: [c.raise, c.muted],
-  }[tone];
-  return <span className={"rounded-md px-2.5 py-1 text-xs font-bold " + className}
+  }[tone] || [c.raise, c.muted];
+  return <span className={"rounded-md px-2 py-0.5 text-xs font-semibold " + className}
     style={{ background: m[0], color: m[1] }}>{children}</span>;
 };
 
-/* A stepper that grows out of the Add button, the way grocery apps do. */
 function AddStepper({ c, qty, add, sub, small }) {
   if (!qty) return (
-    <button onClick={add} className="rounded-md font-bold"
+    <button onClick={add} className="rounded-md font-semibold"
       style={{
-        background: c.green, color: "#fff", height: small ? 30 : 34, padding: "0 16px",
-        fontSize: small ? 12 : 13, boxShadow: `0 2px 0 0 ${c.greenDeep}`,
+        background: c.green, color: "#fff", height: small ? 28 : 32, padding: "0 14px",
+        fontSize: small ? 12 : 13,
       }}>+ ADD</button>
   );
   return (
     <span className="flex items-center rounded-md"
-      style={{ background: c.green, height: small ? 30 : 34, boxShadow: `0 2px 0 0 ${c.greenDeep}` }}>
-      <button onClick={sub} className="grid place-items-center" style={{ width: 30, color: "#fff" }}><Minus size={14} /></button>
-      <span className="text-center font-bold" style={{ ...num, color: "#fff", width: 22, fontSize: 13 }}>{qty}</span>
-      <button onClick={add} className="grid place-items-center" style={{ width: 30, color: "#fff" }}><Plus size={14} /></button>
+      style={{ background: c.green, height: small ? 28 : 32 }}>
+      <button onClick={sub} className="grid place-items-center" style={{ width: 28, color: "#fff" }}><Minus size={13} /></button>
+      <span className="text-center font-bold" style={{ ...num, color: "#fff", width: 20, fontSize: 12 }}>{qty}</span>
+      <button onClick={add} className="grid place-items-center" style={{ width: 28, color: "#fff" }}><Plus size={13} /></button>
     </span>
   );
 }
 
-/* Sticky action bar that sits above the tabs on detail screens. */
 function ActionBar({ c, left, right, onClick, label, lift = 0, wide }) {
   return (
     <div className="fixed left-1/2 z-40 w-full" style={{ bottom: lift, maxWidth: wide ? 768 : 430, transform: "translateX(-50%)" }}>
       <div className="flex items-center gap-3 px-4 pb-4 pt-3"
-        style={{ background: c.surface, borderTop: `1px solid ${c.line}`, boxShadow: `0 -10px 26px -18px ${c.cast}` }}>
+        style={{ background: c.surface, borderTop: `1px solid ${c.line}`, boxShadow: `0 -6px 20px -10px ${c.cast}` }}>
         <div className="min-w-0">
           <div className="truncate text-xs" style={{ color: c.muted }}>{left}</div>
-          <div style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 21, color: c.ink }}>{right}</div>
+          <div style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 20, color: c.ink }}>{right}</div>
         </div>
-        <button onClick={onClick} className="ml-auto flex items-center gap-2 rounded-md font-bold"
-          style={{ background: c.green, color: "#fff", height: 48, padding: "0 24px", fontSize: 15, boxShadow: `0 3px 0 0 ${c.greenDeep}` }}>
-          {label} <ArrowRight size={17} />
+        <button onClick={onClick} className="ml-auto flex items-center gap-2 rounded-lg font-semibold"
+          style={{ background: c.green, color: "#fff", height: 44, padding: "0 20px", fontSize: 14 }}>
+          {label} <ArrowRight size={15} />
         </button>
       </div>
     </div>
@@ -1039,74 +1090,67 @@ function ActionBar({ c, left, right, onClick, label, lift = 0, wide }) {
    ════════════════════════════════════════════════════════════ */
 function Onboard({ c, t, lang, setLang, dark, setDark, pick, canClose, close }) {
   const opts = [
-    { id: "farmer", face: "f1", k: ["gate_farmer", "gate_farmer_s"], tone: c.greenSoft, ink: c.green },
-    { id: "consumer", face: null, icon: Users, k: ["gate_buyer", "gate_buyer_s"], tone: c.goldSoft, ink: c.gold },
-    { id: "retailer", face: null, icon: Boxes, k: ["gate_shop", "gate_shop_s"], tone: c.redSoft, ink: c.red },
+    { id: "farmer", idRef: "f1", icon: Leaf, k: ["gate_farmer", "gate_farmer_s"] },
+    { id: "consumer", idRef: null, icon: Users, k: ["gate_buyer", "gate_buyer_s"] },
+    { id: "retailer", idRef: null, icon: Boxes, k: ["gate_shop", "gate_shop_s"] },
   ];
   return (
     <Phone c={c}>
       <StatusBar c={c} />
-      <div className="flex items-center gap-2 px-4 pt-1">
+      <div className="flex items-center gap-2 px-4 pt-2">
         {canClose && (
-          <button onClick={close} className="grid place-items-center rounded-md"
+          <button onClick={close} className="grid place-items-center rounded-lg"
             style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-            <X size={16} />
+            <X size={15} />
           </button>
         )}
         <div className="ml-auto flex gap-1.5">
-          <button onClick={() => setLang(lang === 0 ? 1 : 0)} className="rounded-md px-3 text-xs font-bold"
-            style={{ height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
+          <button onClick={() => setLang(lang === 0 ? 1 : 0)} className="rounded-lg px-2.5 text-xs font-semibold"
+            style={{ height: 32, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
             {lang === 0 ? "हिंदी" : "English"}
           </button>
-          <button onClick={() => setDark(!dark)} className="grid place-items-center rounded-md"
-            style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
+          <button onClick={() => setDark(!dark)} className="grid place-items-center rounded-lg"
+            style={{ width: 32, height: 32, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
+            {dark ? <Sun size={14} /> : <Moon size={14} />}
           </button>
         </div>
       </div>
 
-      <div className="relative px-5 pb-10 pt-4">
-        <div className="pointer-events-none absolute" style={{ right: -60, top: -20, opacity: .07 }}>
-          <Rangoli c={c} size={240} col={c.green} />
-        </div>
-        <div className="relative flex items-center gap-2.5">
-          <Logo size={38} green={c.green} gold={c.goldBright} />
+      <div className="px-5 pb-10 pt-4">
+        <div className="flex items-center gap-2.5">
+          <Logo size={34} green={c.green} gold={c.goldBright} />
           <div>
-            <div style={{ fontFamily: FD, fontWeight: 700, fontSize: 22, color: c.ink }}>{t("brand")}</div>
-            <div style={{ color: c.muted, fontSize: 12 }}>{lang === 0 ? "किसान सेतु" : "Kisan Setu"}</div>
+            <div style={{ fontFamily: FD, fontWeight: 700, fontSize: 20, color: c.ink }}>{t("brand")}</div>
+            <div style={{ color: c.muted, fontSize: 11 }}>{lang === 0 ? "किसान सेतु" : "Kisan Setu"}</div>
           </div>
         </div>
-        <div className="mt-3"><Toran c={c} h={36} /></div>
 
-        <h1 className="relative mt-5 text-3xl leading-tight" style={{ fontFamily: FD, fontWeight: 700, color: c.ink }}>
+        <h1 className="mt-5 text-2xl font-bold leading-snug" style={{ fontFamily: FD, color: c.ink }}>
           {t("gate_h")}
         </h1>
-        <p className="relative mt-2 text-sm leading-relaxed" style={{ color: c.muted }}>{t("gate_p")}</p>
+        <p className="mt-1.5 text-xs leading-relaxed" style={{ color: c.muted }}>{t("gate_p")}</p>
 
-        <div className="relative mt-6 space-y-3">
+        <div className="mt-5 space-y-2.5">
           {opts.map(o => (
-            <button key={o.id} onClick={() => pick(o.id)} className="flex w-full items-center gap-3 p-3 text-left"
-              style={{ background: c.surface, borderRadius: RAD.card, border: `1px solid ${c.line}`, boxShadow: lift(c) }}>
-              <span className="grid shrink-0 place-items-center overflow-hidden rounded-md"
-                style={{ width: 52, height: 52, background: o.tone, color: o.ink }}>
-                {o.face ? <FarmerFace id={o.face} size={52} c={c} /> : <o.icon size={23} />}
-              </span>
+            <button key={o.id} onClick={() => pick(o.id)} className="flex w-full items-center gap-3 p-3.5 text-left rounded-xl transition-all"
+              style={{ background: c.surface, border: `1px solid ${c.line}`, boxShadow: lift(c) }}>
+              <InitialsAvatar id={o.idRef} size={42} c={c} />
               <span className="min-w-0 flex-1">
-                <span className="block" style={{ fontFamily: FD, fontWeight: 700, fontSize: 18, color: c.ink }}>{t(o.k[0])}</span>
+                <span className="block text-sm font-bold" style={{ color: c.ink }}>{t(o.k[0])}</span>
                 <span className="block text-xs" style={{ color: c.muted }}>{t(o.k[1])}</span>
               </span>
-              <ArrowRight size={19} style={{ color: o.ink }} />
+              <ArrowRight size={16} style={{ color: c.muted }} />
             </button>
           ))}
         </div>
-        <p className="relative mt-6 text-center text-xs" style={{ color: c.muted }}>{t("demo_note")}</p>
+        <p className="mt-6 text-center text-xs" style={{ color: c.muted }}>{t("demo_note")}</p>
       </div>
     </Phone>
   );
 }
 
 /* ════════════════════════════════════════════════════════════
-   BUYER
+   BUYER SCREENS
    ════════════════════════════════════════════════════════════ */
 function ProdCard({ c, t, lang, p, qty, add, sub, open, wide }) {
   const f = FARMERS.find(x => x.id === p.fid);
@@ -1114,20 +1158,24 @@ function ProdCard({ c, t, lang, p, qty, add, sub, open, wide }) {
   return (
     <div style={{
       background: c.surface, borderRadius: RAD.card, border: `1px solid ${c.line}`,
-      boxShadow: lift(c), overflow: "hidden", width: wide ? 156 : "auto", flexShrink: 0,
+      boxShadow: lift(c), overflow: "hidden", width: wide ? 160 : "auto", flexShrink: 0,
     }}>
-      <button onClick={open} className="relative block w-full" style={{ background: c.peach, height: 104 }}>
-        <span className="absolute inset-0 grid place-items-center"><Produce id={p.id} size={70} /></span>
-        <span className="absolute left-2 top-2 rounded-md px-2 py-0.5 text-xs font-bold"
-          style={{ background: c.coral, color: "#fff", fontSize: 10 }}>−{save}%</span>
+      <button onClick={open} className="relative block w-full overflow-hidden" style={{ background: "#FFFFFF", height: 110 }}>
+        <span className="absolute inset-0 grid place-items-center p-2">
+          <Produce id={p.id} size={90} className="w-full h-full object-contain transition-transform duration-300 hover:scale-105" />
+        </span>
+        <span className="absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold z-10 shadow-sm"
+          style={{ background: c.green, color: "#fff", fontSize: 10 }}>−{save}%</span>
         {p.organic && (
-          <span className="absolute right-2 top-2 grid place-items-center rounded-md"
-            style={{ background: c.green, width: 20, height: 20 }}><Leaf size={11} color="#fff" /></span>
+          <span className="absolute right-2 top-2 grid place-items-center rounded z-10 shadow-sm"
+            style={{ background: c.surface, border: `1px solid ${c.line}`, width: 20, height: 20 }}>
+            <Leaf size={11} style={{ color: c.green }} />
+          </span>
         )}
       </button>
       <div className="p-3">
         <button onClick={open} className="block w-full text-left">
-          <div className="truncate text-sm font-bold" style={{ color: c.ink }}>{p.name[lang]}</div>
+          <div className="truncate text-xs font-bold" style={{ color: c.ink }}>{p.name[lang]}</div>
           <div className="mt-0.5 flex items-center gap-1 truncate text-xs" style={{ color: c.muted }}>
             <MapPin size={10} />{f.store[lang].split(" ")[0]} · {f.km} km
           </div>
@@ -1135,7 +1183,7 @@ function ProdCard({ c, t, lang, p, qty, add, sub, open, wide }) {
         <div className="mt-2 flex items-end gap-2">
           <div className="min-w-0">
             <div className="flex items-baseline gap-1">
-              <span style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 17, color: c.ink }}>{inr(p.farmer)}</span>
+              <span style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 16, color: c.ink }}>{inr(p.farmer)}</span>
               <span className="text-xs line-through" style={{ ...num, color: c.muted }}>{inr(p.retail)}</span>
             </div>
             <div className="text-xs" style={{ color: c.muted }}>/{p.unit[lang]}</div>
@@ -1147,7 +1195,8 @@ function ProdCard({ c, t, lang, p, qty, add, sub, open, wide }) {
   );
 }
 
-function BuyerHome({ c, t, lang, go, openStore, openProduct, cart, addToCart, subFromCart, setCat }) {
+function BuyerHome({ c, t, lang, role, go, openStore, openProduct, cart, addToCart, subFromCart, setCat }) {
+  const isShopkeeper = role === "retailer";
   const tom = PRODUCTS.find(p => p.id === "p1");
   const fresh = PRODUCTS.filter(p => p.harvest <= 2).slice(0, 6);
   const deals = [...PRODUCTS].sort((a, b) => (b.retail - b.farmer) / b.retail - (a.retail - a.farmer) / a.retail).slice(0, 6);
@@ -1156,74 +1205,129 @@ function BuyerHome({ c, t, lang, go, openStore, openProduct, cart, addToCart, su
 
   return (
     <div className="pb-4">
-      {/* hero */}
+      {/* Hero Banner with Full Farmer & Tomato Basket Visual */}
       <div className="px-4 pt-1">
-        <div className="relative overflow-hidden" style={{ borderRadius: RAD.sheet, background: c.green, boxShadow: liftHi(c) }}>
-          <Toran c={c} h={30} />
-          <div className="pointer-events-none absolute" style={{ right: -46, bottom: -46, opacity: .16 }}>
-            <Rangoli c={c} size={190} col="#fff" />
+        <div
+          className="relative overflow-hidden rounded-2xl text-white min-h-[260px] sm:min-h-[320px] md:min-h-[350px] lg:min-h-[380px] flex items-center p-5 md:p-8"
+          style={{
+            background: "#133522",
+            boxShadow: liftHi(c),
+          }}>
+          {/* Image layer anchored to right with full-height cover to remove any top gap */}
+          <div className="absolute right-0 top-0 bottom-0 w-full sm:w-7/12 md:w-3/5 lg:w-3/5 pointer-events-none overflow-hidden">
+            <img
+              src={isShopkeeper ? "/hero-mango.jpg" : "/hero-farmer.jpg"}
+              alt={isShopkeeper ? "Farmer holding crate of fresh orchard mangoes" : "Farmer holding basket of fresh tomatoes"}
+              className="h-full w-full object-cover"
+              style={{ objectPosition: "85% 30%" }}
+            />
+            {/* Left-to-right fade overlay for text readability */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: "linear-gradient(90deg, #133522 0%, rgba(19,53,34,0.95) 25%, rgba(19,53,34,0.3) 65%, transparent 100%)",
+              }}
+            />
+            {/* Mobile bottom-to-top subtle fade */}
+            <div
+              className="absolute inset-0 sm:hidden"
+              style={{
+                background: "linear-gradient(0deg, rgba(19,53,34,0.88) 0%, rgba(19,53,34,0.3) 60%, transparent 100%)",
+              }}
+            />
           </div>
-          <div className="relative flex items-end gap-2 p-4 pt-3">
-            <div className="min-w-0 flex-1">
-              <h1 style={{ fontFamily: FD, fontWeight: 700, fontSize: 25, color: "#fff", lineHeight: 1.12 }}>
-                {t("hero_a")}<br />{t("hero_b")}
-              </h1>
-              <p className="mt-1.5 text-xs" style={{ color: "rgba(255,255,255,.85)", maxWidth: "28ch" }}>{t("greet_sub")}</p>
-              <button onClick={() => go("shop")} className="mt-3 flex items-center gap-2 rounded-md font-bold"
-                style={{ background: c.goldBright, color: "#2C2110", height: 38, padding: "0 18px", fontSize: 13 }}>
-                {t("shop_now")} <ArrowRight size={15} />
+
+          {/* Content layer */}
+          <div className="relative z-10 max-w-sm md:max-w-md lg:max-w-lg">
+            <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold backdrop-blur-md mb-2.5 border"
+              style={{ background: "rgba(255,255,255,0.14)", borderColor: "rgba(255,255,255,0.22)", color: "#FFFFFF" }}>
+              <Sparkles size={12} className="text-amber-300" />
+              <span>
+                {isShopkeeper
+                  ? (lang === 0 ? "Bulk Farm-to-Shop Direct • 7% Trade Margin" : "सीधा खेत-से-दुकान थोक आपूर्ति • 7% व्यापार छूट")
+                  : (lang === 0 ? "Direct From Verified Farms" : "सत्यापित खेतों से सीधा")}
+              </span>
+            </div>
+
+            <h1 style={{ fontFamily: FD, fontWeight: 700, fontSize: 26, lineHeight: 1.15, textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+              {isShopkeeper ? (
+                <>
+                  {lang === 0 ? "Orchard-Fresh Mangoes." : "बाग़ के ताज़ा आम क्रेट।"}<br />
+                  {lang === 0 ? "Zero Commission, Farm Rate." : "शून्य आढ़त, सीधा खेत का भाव।"}
+                </>
+              ) : (
+                <>
+                  {t("hero_a")}<br />{t("hero_b")}
+                </>
+              )}
+            </h1>
+
+            <p className="mt-2.5 text-xs md:text-sm leading-relaxed max-w-sm" style={{ color: "rgba(255, 255, 255, 0.92)", textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}>
+              {isShopkeeper
+                ? (lang === 0
+                    ? "Direct bulk supply from Muradnagar orchards with 7% trade discount, verified crates, and next-day hub delivery."
+                    : "मुरादनगर के बाग़ों से 7% व्यापार छूट, डिजिटल तौल और सुबह की हब डिलीवरी के साथ सीधा थोक माल लें।")
+                : t("hero_p")}
+            </p>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button onClick={() => go("shop")}
+                className="flex items-center gap-2 rounded-lg font-bold transition-transform active:scale-95 shadow-md"
+                style={{ background: "#FFFFFF", color: c.greenDeep, height: 40, padding: "0 20px", fontSize: 13 }}>
+                {isShopkeeper ? (lang === 0 ? "Explore Bulk Mandi" : "थोक मंडी देखें") : t("cta_shop")} <ArrowRight size={14} />
+              </button>
+              <button onClick={() => openProduct(isShopkeeper ? "p8" : "p1")}
+                className="flex items-center gap-1.5 rounded-lg text-xs font-semibold px-3 py-2.5 backdrop-blur-md border transition-colors hover:bg-white/10"
+                style={{ background: "rgba(255,255,255,0.14)", borderColor: "rgba(255,255,255,0.25)", color: "#FFFFFF" }}>
+                <span>{isShopkeeper ? (lang === 0 ? "Bulk Mango ₹41.8/kg (50kg+)" : "थोक आम ₹41.8/किलो (50kg+)") : (lang === 0 ? "Fresh Tomato ₹18/kg" : "ताज़ा टमाटर ₹18/किलो")}</span>
               </button>
             </div>
-            <div className="shrink-0" style={{ marginBottom: -4 }}><FarmerFace id="f1" size={92} c={c} /></div>
           </div>
         </div>
       </div>
 
-      {/* categories */}
-      <div className="mt-6">
+      {/* Categories */}
+      <div className="mt-5">
         <SectionHead c={c} title={t("quick_pick")} />
-        <div className="flex gap-3 overflow-x-auto px-4 pb-1">
+        <div className="flex gap-2.5 overflow-x-auto px-4 pb-1">
           {CATS.map(k => {
             const sample = PRODUCTS.find(p => p.cat === k.id);
             return (
-              <button key={k.id} onClick={() => { setCat(k.id); go("shop"); }} className="shrink-0 text-center" style={{ width: 68 }}>
-                <span className="grid place-items-center rounded-md"
-                  style={{ width: 64, height: 64, background: c.peach, border: `1px solid ${c.line}`, boxShadow: lift(c) }}>
-                  <Produce id={sample.id} size={40} />
+              <button key={k.id} onClick={() => { setCat(k.id); go("shop"); }} className="shrink-0 text-center" style={{ width: 64 }}>
+                <span className="grid place-items-center rounded-lg"
+                  style={{ width: 60, height: 60, background: c.peach, border: `1px solid ${c.line}` }}>
+                  <Produce id={sample.id} size={40} bg="beige" />
                 </span>
-                <span className="mt-1.5 block text-xs font-semibold" style={{ color: c.ink }}>{k.label[lang]}</span>
+                <span className="mt-1 block text-xs font-semibold" style={{ color: c.ink }}>{k.label[lang]}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* the argument, as a tappable card */}
-      <div className="mt-6 px-4">
+      {/* Price Breakdown Micro-card */}
+      <div className="mt-5 px-4">
         <button onClick={() => openProduct(tom.id)} className="block w-full text-left">
-          <Sheet c={c} className="p-4">
-            <div className="flex items-center gap-2">
-              <Scale size={15} style={{ color: c.violet }} />
-              <span className="text-xs font-bold uppercase" style={{ color: c.violet, letterSpacing: ".12em" }}>{t("price_journey")}</span>
-              <ArrowRight size={14} className="ml-auto" style={{ color: c.muted }} />
+          <Sheet c={c} className="p-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase" style={{ color: c.muted, letterSpacing: "0.08em" }}>
+                <Scale size={14} /> {t("price_journey")}
+              </div>
+              <ArrowRight size={14} style={{ color: c.muted }} />
             </div>
-            <p className="mt-2 text-sm leading-snug" style={{ color: c.ink }}>
-              {lang === 0 ? "Five hands touch your tomatoes. The farmer gets one."
-                : "आपके टमाटर पाँच हाथों से गुज़रते हैं। किसान को एक मिलता है।"}
-            </p>
-            <div className="mt-3"><PriceRail c={c} t={t} p={tom} small /></div>
+            <div className="mt-2.5"><PriceRail c={c} t={t} p={tom} small /></div>
             <div className="mt-3 flex items-center gap-2">
               <Pill c={c} tone="green">{t("farmer_gets")} {inr(tom.farmer)}</Pill>
-              <Pill c={c} tone="coral">{lang === 0 ? "Middlemen" : "बिचौलिये"} {inr(tom.retail - tom.farmer)}</Pill>
+              <Pill c={c} tone="flat">{lang === 0 ? "Intermediary Gap" : "बिचौलिया अंतर"} {inr(tom.retail - tom.farmer)}</Pill>
             </div>
           </Sheet>
         </button>
       </div>
 
-      {/* picked today */}
-      <div className="mt-6">
+      {/* Picked Today */}
+      <div className="mt-5">
         <SectionHead c={c} title={t("fresh_today")} action={t("see_all_b")} onAction={() => go("shop")} />
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2">
+        <div className="flex gap-2.5 overflow-x-auto px-4 pb-2">
           {fresh.map(p => (
             <ProdCard key={p.id} c={c} t={t} lang={lang} p={p} wide qty={q(p.id)}
               add={() => addToCart(p.id)} sub={() => subFromCart(p.id)} open={() => openProduct(p.id)} />
@@ -1231,59 +1335,34 @@ function BuyerHome({ c, t, lang, go, openStore, openProduct, cart, addToCart, su
         </div>
       </div>
 
-      {/* farmers */}
-      <div className="mt-6">
+      {/* Nearby Farms */}
+      <div className="mt-5">
         <SectionHead c={c} title={t("our_farmers")} action={t("see_all_b")} onAction={() => go("shop")} />
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2">
+        <div className="flex gap-2.5 overflow-x-auto px-4 pb-2">
           {FARMERS.map(f => (
-            <button key={f.id} onClick={() => openStore(f.id)} className="shrink-0 text-left" style={{ width: 172 }}>
+            <button key={f.id} onClick={() => openStore(f.id)} className="shrink-0 text-left" style={{ width: 160 }}>
               <Sheet c={c} className="h-full p-3">
                 <div className="flex items-center gap-2">
-                  <FarmerFace id={f.id} size={44} c={c} />
+                  <InitialsAvatar id={f.id} size={38} c={c} verified={f.verified} />
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-bold" style={{ color: c.ink }}>{f.name[lang]}</div>
-                    <div className="text-xs" style={{ color: c.muted }}>
-                      {PRODUCTS.filter(x => x.fid === f.id).length} {lang === 0 ? "crops listed" : "फ़सलें सूचीबद्ध"}
-                    </div>
+                    <div className="truncate text-xs font-bold" style={{ color: c.ink }}>{f.name[lang]}</div>
+                    <div className="text-xs" style={{ color: c.muted }}>{f.km} km</div>
                   </div>
                 </div>
                 <div className="mt-2 truncate text-xs" style={{ color: c.muted }}>{f.store[lang]}</div>
-                <div className="mt-1 flex items-center gap-1 text-xs" style={{ color: c.muted }}>
-                  <MapPin size={10} />{f.place[lang]} · {f.km} km
-                </div>
               </Sheet>
             </button>
           ))}
         </div>
       </div>
 
-      {/* biggest savings */}
-      <div className="mt-6">
+      {/* Deals */}
+      <div className="mt-5">
         <SectionHead c={c} title={t("deals")} />
-        <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4">
           {deals.slice(0, 4).map(p => (
             <ProdCard key={p.id} c={c} t={t} lang={lang} p={p} qty={q(p.id)}
               add={() => addToCart(p.id)} sub={() => subFromCart(p.id)} open={() => openProduct(p.id)} />
-          ))}
-        </div>
-      </div>
-
-      {/* how it works */}
-      <div className="mt-7">
-        <SectionHead c={c} title={t("how_h")} />
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2">
-          {steps.map(([kind, k, ks], i) => (
-            <div key={i} className="shrink-0" style={{ width: 186 }}>
-              <Sheet c={c} className="h-full p-4" tone={c.raise}>
-                <div className="flex items-center justify-between">
-                  <FolkFigure c={c} kind={kind} size={64} />
-                  <span className="grid place-items-center rounded-md text-xs font-bold"
-                    style={{ background: c.green, color: "#fff", width: 20, height: 20 }}>{i + 1}</span>
-                </div>
-                <div className="mt-1 text-sm font-bold" style={{ color: c.ink }}>{t(k)}</div>
-                <p className="mt-1 text-xs leading-relaxed" style={{ color: c.muted }}>{t(ks)}</p>
-              </Sheet>
-            </div>
           ))}
         </div>
       </div>
@@ -1306,18 +1385,18 @@ function Shop({ c, t, lang, role, cat, setCat, openProduct, openStore, cart, add
 
   return (
     <div className="pb-4">
-      <div className="sticky z-20 px-4 pb-3 pt-1" style={{ top: 72, background: c.bg }}>
-        <div className="flex items-center gap-2 px-3" style={{ background: c.surface, borderRadius: RAD.chip, border: `1px solid ${c.line}`, height: 42, boxShadow: lift(c) }}>
-          <Search size={16} style={{ color: c.muted }} />
+      <div className="sticky z-20 px-4 pb-3 pt-1" style={{ top: 60, background: c.bg }}>
+        <div className="flex items-center gap-2 px-3" style={{ background: c.surface, borderRadius: RAD.chip, border: `1px solid ${c.line}`, height: 40, boxShadow: lift(c) }}>
+          <Search size={15} style={{ color: c.muted }} />
           <input value={q} onChange={e => setQ(e.target.value)} placeholder={t("search_ph")}
-            className="w-full bg-transparent text-sm outline-none" style={{ color: c.ink }} />
-          {q && <button onClick={() => setQ("")} style={{ color: c.muted }}><X size={15} /></button>}
+            className="w-full bg-transparent text-xs outline-none" style={{ color: c.ink }} />
+          {q && <button onClick={() => setQ("")} style={{ color: c.muted }}><X size={14} /></button>}
         </div>
-        <div className="mt-2.5 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
           {[{ id: "all", label: [t("all"), t("all")] }, ...CATS].map(k => {
             const on = cat === k.id;
             return (
-              <button key={k.id} onClick={() => setCat(k.id)} className="shrink-0 rounded-md px-3 py-1.5 text-xs font-bold"
+              <button key={k.id} onClick={() => setCat(k.id)} className="shrink-0 rounded-md px-3 py-1 text-xs font-semibold"
                 style={{
                   background: on ? c.green : c.surface, color: on ? "#fff" : c.muted,
                   border: `1px solid ${on ? c.green : c.line}`,
@@ -1327,53 +1406,26 @@ function Shop({ c, t, lang, role, cat, setCat, openProduct, openStore, cart, add
         </div>
       </div>
 
-      <div className="flex items-center gap-2 px-4 pb-3">
+      <div className="flex items-center gap-2 px-4 pb-3 text-xs">
         <select value={sort} onChange={e => setSort(e.target.value)}
-          className="rounded-md px-3 py-1.5 text-xs font-semibold outline-none"
+          className="rounded-md px-2.5 py-1 text-xs font-semibold outline-none"
           style={{ background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
           <option value="near">{t("sort_near")}</option>
           <option value="save">{t("sort_save")}</option>
           <option value="price">{t("sort_price")}</option>
         </select>
-        <span className="ml-auto text-xs" style={{ color: c.muted }}>{t("within")}</span>
+        <span className="ml-auto" style={{ color: c.muted }}>{t("within")}</span>
         <input type="range" min="5" max="50" step="5" value={radius} onChange={e => setRadius(+e.target.value)}
           className="w-20" style={{ accentColor: c.green }} />
-        <span className="text-xs font-bold" style={{ ...num, color: c.ink }}>{radius}km</span>
+        <span className="font-bold" style={{ ...num, color: c.ink }}>{radius}km</span>
       </div>
 
-      <div className="mb-3 px-4">
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          {FARMERS.filter(f => f.km <= radius).map(f => (
-            <button key={f.id} onClick={() => openStore(f.id)} className="shrink-0 text-center" style={{ width: 62 }}>
-              <FarmerFace id={f.id} size={54} c={c} />
-              <div className="truncate text-xs font-semibold" style={{ color: c.ink }}>{f.store[lang].split(" ")[0]}</div>
-              <div className="text-xs" style={{ ...num, color: c.muted }}>{f.km}km</div>
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4">
+        {list.map(p => (
+          <ProdCard key={p.id} c={c} t={t} lang={lang} p={p} qty={qty(p.id)}
+            add={() => addToCart(p.id)} sub={() => subFromCart(p.id)} open={() => openProduct(p.id)} />
+        ))}
       </div>
-
-      {list.length === 0 ? (
-        <div className="px-4 py-14 text-center">
-          <FolkFigure c={c} kind="pick" size={90} />
-          <p className="mt-2 text-sm" style={{ color: c.muted }}>
-            {lang === 0 ? "No farm within this radius is listing that." : "इस दायरे में किसी खेत ने वह सूचीबद्ध नहीं किया।"}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {list.map(p => (
-            <ProdCard key={p.id} c={c} t={t} lang={lang} p={p} qty={qty(p.id)}
-              add={() => addToCart(p.id)} sub={() => subFromCart(p.id)} open={() => openProduct(p.id)} />
-          ))}
-        </div>
-      )}
-      {role === "retailer" && (
-        <div className="mt-4 px-4"><Sheet c={c} className="flex items-center gap-2 p-3" tone={c.goldSoft}>
-          <Boxes size={16} style={{ color: c.gold }} />
-          <span className="text-xs" style={{ color: c.gold }}>{t("retail_min")}</span>
-        </Sheet></div>
-      )}
     </div>
   );
 }
@@ -1388,120 +1440,56 @@ function ProductScreen({ c, t, lang, role, pid, openStore, openProduct, addToCar
 
   return (
     <div className="pb-28">
-      <div className="relative px-4 pt-1">
-        <div className="relative overflow-hidden" style={{ background: c.peach, borderRadius: RAD.sheet, height: 190 }}>
-          <div className="absolute inset-0 grid place-items-center opacity-10"><Rangoli c={c} size={210} col={c.green} /></div>
-          <div className="absolute inset-0 grid place-items-center"><Produce id={p.id} size={132} /></div>
+      <div className="px-4 pt-1">
+        <div className="relative rounded-xl p-4 flex items-center justify-center overflow-hidden" style={{ background: "#FFFFFF", height: 180, border: `1px solid ${c.line}` }}>
+          <Produce id={p.id} size={150} className="w-full h-full object-contain" />
           <div className="absolute left-3 top-3 flex gap-2">
-            <Pill c={c} tone="coral">−{Math.round(((p.retail - p.farmer) / p.retail) * 100)}%</Pill>
-            {p.organic && <Pill c={c} tone="green">{lang === 0 ? "Organic" : "जैविक"}</Pill>}
+            <Pill c={c} tone="green">−{Math.round(((p.retail - p.farmer) / p.retail) * 100)}%</Pill>
+            {p.organic && <Pill c={c} tone="flat">{lang === 0 ? "Organic" : "जैविक"}</Pill>}
           </div>
         </div>
       </div>
 
       <div className="px-4 pt-4">
-        <h1 style={{ fontFamily: FD, fontWeight: 700, fontSize: 26, color: c.ink }}>{p.name[lang]}</h1>
+        <h1 style={{ fontFamily: FD, fontWeight: 700, fontSize: 24, color: c.ink }}>{p.name[lang]}</h1>
         <p className="mt-1 text-xs" style={{ color: c.muted }}>
-          {t("harvested")} {p.harvest === 0 ? (lang === 0 ? "this morning" : "आज सुबह")
-            : `${p.harvest} ${lang === 0 ? "days ago" : "दिन पहले"}`} · {p.stock} {p.unit[lang]} {t("stock_left")}
+          {t("harvested")} {p.harvest === 0 ? (lang === 0 ? "this morning" : "आज सुबह") : `${p.harvest}d ago`} · {p.stock} {p.unit[lang]} {t("stock_left")}
         </p>
         <div className="mt-3 flex items-baseline gap-2">
-          <span style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 32, color: c.green }}>{inr(p.farmer * bulk)}</span>
-          <span className="text-sm" style={{ color: c.muted }}>/{p.unit[lang]}</span>
-          <span className="text-sm line-through" style={{ ...num, color: c.muted }}>{inr(p.retail)}</span>
+          <span style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 30, color: c.green }}>{inr(p.farmer * bulk)}</span>
+          <span className="text-xs" style={{ color: c.muted }}>/{p.unit[lang]}</span>
+          <span className="text-xs line-through" style={{ ...num, color: c.muted }}>{inr(p.retail)}</span>
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <span className="text-sm font-semibold" style={{ color: c.ink }}>{t("qty")}</span>
-          <span className="flex items-center rounded-md" style={{ border: `1px solid ${c.line}`, background: c.surface, height: 40 }}>
-            <button onClick={() => setQty(Math.max(min, qty - stepBy))} className="grid place-items-center" style={{ width: 40, color: c.ink }}><Minus size={16} /></button>
-            <span className="text-center font-bold" style={{ ...num, width: 44, color: c.ink }}>{qty}</span>
-            <button onClick={() => setQty(Math.min(max, qty + stepBy))} className="grid place-items-center" style={{ width: 40, color: c.ink }}><Plus size={16} /></button>
+          <span className="text-xs font-semibold" style={{ color: c.ink }}>{t("qty")}</span>
+          <span className="flex items-center rounded-lg" style={{ border: `1px solid ${c.line}`, background: c.surface, height: 36 }}>
+            <button onClick={() => setQty(Math.max(min, qty - stepBy))} className="grid place-items-center" style={{ width: 36, color: c.ink }}><Minus size={14} /></button>
+            <span className="text-center font-bold text-xs" style={{ ...num, width: 40, color: c.ink }}>{qty}</span>
+            <button onClick={() => setQty(Math.min(max, qty + stepBy))} className="grid place-items-center" style={{ width: 36, color: c.ink }}><Plus size={14} /></button>
           </span>
           <span className="text-xs" style={{ color: c.muted }}>{p.unit[lang]}</span>
         </div>
-        <p className="mt-2 flex items-start gap-1.5 text-xs" style={{ color: role === "retailer" ? c.gold : c.muted }}>
-          {role === "retailer" ? <Boxes size={12} className="mt-0.5 shrink-0" /> : <Users size={12} className="mt-0.5 shrink-0" />}
-          {role === "retailer" ? t("retail_min") : t("consumer_cap")}
-        </p>
-      </div>
-
-      <div className="mt-5 px-4">
-        <Sheet c={c} className="p-4">
-          <div className="flex items-center gap-2">
-            <Scale size={15} style={{ color: c.violet }} />
-            <span className="text-xs font-bold uppercase" style={{ color: c.violet, letterSpacing: ".12em" }}>{t("price_journey")}</span>
-          </div>
-          <div className="mt-3"><PriceRail c={c} t={t} p={p} /></div>
-          <div className="mt-3 rounded-xl p-3" style={{ background: c.greenSoft }}>
-            <p className="text-xs leading-relaxed" style={{ color: c.green }}>
-              {lang === 0
-                ? `In the open market only ${Math.round((p.farmer / p.retail) * 100)} paise of your rupee reaches the farm. Here the whole ${inr(p.farmer)} does.`
-                : `खुले बाज़ार में आपके रुपये का सिर्फ़ ${Math.round((p.farmer / p.retail) * 100)} पैसा खेत तक पहुँचता है। यहाँ पूरा ${inr(p.farmer)} पहुँचता है।`}
-            </p>
-          </div>
-          <div className="mt-3 flex items-center justify-between text-xs" style={{ color: c.muted }}>
-            <span>{t("market_ref")}</span>
-            <span style={{ ...num, fontWeight: 700, color: c.ink }}>{inr(p.mandi)}/{p.unit[lang]}</span>
-          </div>
-        </Sheet>
       </div>
 
       <div className="mt-4 px-4">
+        <Sheet c={c} className="p-3.5">
+          <div className="text-xs font-semibold uppercase mb-2" style={{ color: c.muted, letterSpacing: "0.08em" }}>{t("price_journey")}</div>
+          <PriceRail c={c} t={t} p={p} />
+        </Sheet>
+      </div>
+
+      <div className="mt-3 px-4">
         <button onClick={() => openStore(f.id)} className="block w-full text-left">
           <Sheet c={c} className="flex items-center gap-3 p-3">
-            <FarmerFace id={f.id} size={48} c={c} />
+            <InitialsAvatar id={f.id} size={40} c={c} verified={f.verified} />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="truncate text-sm font-bold" style={{ color: c.ink }}>{f.store[lang]}</span>
-                {f.verified && <CheckCircle2 size={13} style={{ color: c.green }} />}
-              </div>
-              <div className="truncate text-xs" style={{ color: c.muted }}>{f.name[lang]} · {f.km} {t("km_away")}</div>
+              <div className="truncate text-xs font-bold" style={{ color: c.ink }}>{f.store[lang]}</div>
+              <div className="truncate text-xs" style={{ color: c.muted }}>{f.place[lang]} · {f.km} {t("km_away")}</div>
             </div>
-            <ArrowRight size={16} style={{ color: c.muted }} />
+            <ArrowRight size={14} style={{ color: c.muted }} />
           </Sheet>
         </button>
-      </div>
-
-      <div className="mt-4 px-4">
-        <Sheet c={c} className="p-4">
-          {[[t("subtotal"), produce], [`${t("platform_fee")} 2%`, fee], [`${t("your_half")} · ${f.km}km`, trans / 2]].map(([l, v], i) => (
-            <div key={i} className="flex justify-between py-1 text-sm">
-              <span style={{ color: c.muted }}>{l}</span><span style={{ ...num, color: c.ink }}>{inr1(v)}</span>
-            </div>
-          ))}
-          <div className="mt-2 flex items-center justify-between rounded-xl px-3 py-2" style={{ background: c.goldSoft }}>
-            <span className="text-xs font-bold" style={{ color: c.gold }}>{t("you_save")}</span>
-            <span className="text-sm font-bold" style={{ ...num, color: c.gold }}>{inr(shelf - pay)}</span>
-          </div>
-        </Sheet>
-      </div>
-
-      <div className="mt-4 px-4">
-        <Sheet c={c} className="flex items-center gap-3 p-4">
-          <LockBox c={c} open={false} size={66} />
-          <div>
-            <div className="text-sm font-bold" style={{ color: c.ink }}>{t("escrow_h")}</div>
-            <p className="mt-1 text-xs leading-relaxed" style={{ color: c.muted }}>{t("escrow_p")}</p>
-          </div>
-        </Sheet>
-      </div>
-
-      <div className="mt-5">
-        <SectionHead c={c} title={t("more_from")} />
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2">
-          {PRODUCTS.filter(x => x.fid === f.id && x.id !== p.id).map(x => (
-            <button key={x.id} onClick={() => openProduct(x.id)} className="shrink-0" style={{ width: 108 }}>
-              <Sheet c={c} className="p-2 text-center">
-                <span className="mx-auto grid place-items-center rounded-xl" style={{ background: c.peach, height: 62 }}>
-                  <Produce id={x.id} size={44} />
-                </span>
-                <div className="mt-1.5 truncate text-xs font-semibold" style={{ color: c.ink }}>{x.name[lang]}</div>
-                <div className="text-xs font-bold" style={{ ...num, color: c.green }}>{inr(x.farmer)}</div>
-              </Sheet>
-            </button>
-          ))}
-        </div>
       </div>
 
       <ActionBar c={c} wide={wide} left={`${qty} ${p.unit[lang]} · ${t("total_word")}`} right={inr(pay)}
@@ -1512,47 +1500,25 @@ function ProductScreen({ c, t, lang, role, pid, openStore, openProduct, addToCar
 
 function StoreScreen({ c, t, lang, fid, openProduct, cart, addToCart, subFromCart }) {
   const f = FARMERS.find(x => x.id === fid), items = PRODUCTS.filter(p => p.fid === fid);
-  const avg = Math.round(items.reduce((s, p) => s + (p.retail - p.farmer) / p.retail, 0) / items.length * 100);
   const qty = id => cart.find(x => x.id === id)?.qty;
   return (
     <div className="pb-4">
       <div className="px-4 pt-1">
-        <div className="relative overflow-hidden p-4" style={{ borderRadius: RAD.sheet, background: c.green, boxShadow: liftHi(c) }}>
-          <div className="pointer-events-none absolute" style={{ right: -50, top: -50, opacity: .15 }}>
-            <Rangoli c={c} size={180} col="#fff" />
-          </div>
-          <div className="relative flex items-center gap-3">
-            <FarmerFace id={f.id} size={70} c={c} />
+        <div className="rounded-xl p-4" style={{ background: c.green, color: "#fff" }}>
+          <div className="flex items-center gap-3">
+            <InitialsAvatar id={f.id} size={48} c={c} verified={f.verified} />
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="truncate" style={{ fontFamily: FD, fontWeight: 700, fontSize: 19, color: "#fff" }}>{f.store[lang]}</span>
-                {f.verified && <CheckCircle2 size={14} color="#fff" />}
-              </div>
-              <div className="text-xs" style={{ color: "rgba(255,255,255,.85)" }}>{f.name[lang]} · {f.place[lang]}</div>
-              <div className="mt-1 flex gap-2">
-                <span className="rounded-md px-2 py-0.5 text-xs font-bold" style={{ background: "rgba(255,255,255,.2)", color: "#fff" }}>
-                  {f.km} km
-                </span>
-              </div>
+              <div className="truncate font-bold text-base">{f.store[lang]}</div>
+              <div className="text-xs text-white/80">{f.name[lang]} · {f.place[lang]} · {f.km} km</div>
             </div>
           </div>
-          <p className="relative mt-3 text-xs leading-relaxed" style={{ color: "rgba(255,255,255,.9)" }}>{f.bio[lang]}</p>
+          <p className="mt-2.5 text-xs leading-relaxed text-white/90">{f.bio[lang]}</p>
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-3 px-4">
-        {[[PRODUCTS.filter(x => x.fid === f.id).length, lang === 0 ? "crops listed" : "फ़सलें"],
-          [f.since, t("since")], [`${avg}%`, lang === 0 ? "below shop price" : "दुकान से कम"]].map(([v, l], i) => (
-          <Sheet c={c} key={i} className="p-3 text-center">
-            <div style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 19, color: c.ink }}>{v}</div>
-            <div className="text-xs" style={{ color: c.muted }}>{l}</div>
-          </Sheet>
-        ))}
-      </div>
-
-      <div className="mt-5">
+      <div className="mt-4">
         <SectionHead c={c} title={lang === 0 ? "In season right now" : "अभी मौसम में"} />
-        <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4">
           {items.map(p => (
             <ProdCard key={p.id} c={c} t={t} lang={lang} p={p} qty={qty(p.id)}
               add={() => addToCart(p.id)} sub={() => subFromCart(p.id)} open={() => openProduct(p.id)} />
@@ -1570,11 +1536,11 @@ function CartScreen({ c, t, lang, role, cart, addToCart, subFromCart, remove, go
   });
   if (!rows.length) return (
     <div className="px-6 py-16 text-center">
-      <FolkFigure c={c} kind="pick" size={110} />
-      <h2 className="mt-3" style={{ fontFamily: FD, fontWeight: 700, fontSize: 21, color: c.ink }}>{t("cart_empty_h")}</h2>
-      <p className="mt-1 text-sm" style={{ color: c.muted }}>{t("empty_sub")}</p>
-      <button onClick={() => go("shop")} className="mt-6 rounded-md font-bold"
-        style={{ background: c.green, color: "#fff", height: 46, padding: "0 26px", boxShadow: `0 3px 0 0 ${c.greenDeep}` }}>
+      <ShoppingCart size={48} className="mx-auto mb-3" style={{ color: c.muted }} />
+      <h2 style={{ fontFamily: FD, fontWeight: 700, fontSize: 20, color: c.ink }}>{t("cart_empty_h")}</h2>
+      <p className="mt-1 text-xs" style={{ color: c.muted }}>{t("empty_sub")}</p>
+      <button onClick={() => go("shop")} className="mt-5 rounded-lg font-semibold text-xs"
+        style={{ background: c.green, color: "#fff", height: 40, padding: "0 20px" }}>
         {t("shop_now")}
       </button>
     </div>
@@ -1586,74 +1552,55 @@ function CartScreen({ c, t, lang, role, cart, addToCart, subFromCart, remove, go
   const shelf = rows.reduce((s, r) => s + r.p.retail * r.qty, 0);
 
   return (
-    <div className="pb-32">
-      <div className="px-4 pb-3">
-        <Sheet c={c} className="flex items-center gap-2 p-3" tone={c.greenSoft}>
-          <MapPin size={14} style={{ color: c.green }} />
-          <span className="text-xs" style={{ color: c.green }}>{t("loc")} <b>{addr}</b></span>
-        </Sheet>
-      </div>
+    <div className="pb-32 px-4 space-y-3">
+      <Sheet c={c} className="flex items-center gap-2 p-3" tone={c.greenSoft}>
+        <MapPin size={14} style={{ color: c.green }} />
+        <span className="text-xs" style={{ color: c.green }}>{t("loc")} <b>{addr}</b></span>
+      </Sheet>
+
       {farms.map(fid => {
         const f = FARMERS.find(x => x.id === fid);
         return (
-          <div key={fid} className="mb-3 px-4">
-            <Sheet c={c} className="overflow-hidden">
-              <div className="flex items-center gap-2 px-3 py-2.5" style={{ background: c.raise, borderBottom: `1px solid ${c.line}` }}>
-                <FarmerFace id={f.id} size={28} c={c} />
-                <span className="truncate text-xs font-bold" style={{ color: c.ink }}>{f.store[lang]}</span>
-                <span className="ml-auto text-xs" style={{ ...num, color: c.muted }}>
-                  <Truck size={11} className="mr-1 inline" />{inr(transportFor(f.km) / 2)}
-                </span>
-              </div>
-              {rows.filter(r => r.f.id === fid).map(r => (
-                <div key={r.id} className="flex items-center gap-3 px-3 py-3" style={{ borderBottom: `1px solid ${c.line}` }}>
-                  <span className="grid place-items-center rounded-xl" style={{ background: c.peach, width: 48, height: 48 }}>
-                    <Produce id={r.p.id} size={34} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold" style={{ color: c.ink }}>{r.p.name[lang]}</div>
-                    <div className="text-xs" style={{ ...num, color: c.muted }}>
-                      {inr(r.p.farmer * (role === "retailer" ? .93 : 1))}/{r.p.unit[lang]}
-                    </div>
+          <Sheet c={c} key={fid} className="overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ background: c.raise, borderColor: c.line }}>
+              <InitialsAvatar id={f.id} size={24} c={c} />
+              <span className="truncate text-xs font-bold" style={{ color: c.ink }}>{f.store[lang]}</span>
+              <span className="ml-auto text-xs" style={{ ...num, color: c.muted }}>
+                <Truck size={11} className="mr-1 inline" />{inr(transportFor(f.km) / 2)}
+              </span>
+            </div>
+            {rows.filter(r => r.f.id === fid).map(r => (
+              <div key={r.id} className="flex items-center gap-2.5 px-3 py-2.5 border-b" style={{ borderColor: c.line }}>
+                <Produce id={r.p.id} size={30} />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-xs font-bold" style={{ color: c.ink }}>{r.p.name[lang]}</div>
+                  <div className="text-xs" style={{ ...num, color: c.muted }}>
+                    {inr(r.p.farmer * (role === "retailer" ? .93 : 1))}/{r.p.unit[lang]}
                   </div>
-                  <span style={{ ...num, fontWeight: 700, color: c.ink, fontSize: 14 }}>{inr(r.line)}</span>
-                  <AddStepper c={c} qty={r.qty} add={() => addToCart(r.id)} sub={() => subFromCart(r.id)} small />
-                  <button onClick={() => remove(r.id)} style={{ color: c.muted }}><Trash2 size={14} /></button>
                 </div>
-              ))}
-            </Sheet>
-          </div>
+                <span style={{ ...num, fontWeight: 700, color: c.ink, fontSize: 13 }}>{inr(r.line)}</span>
+                <AddStepper c={c} qty={r.qty} add={() => addToCart(r.id)} sub={() => subFromCart(r.id)} small />
+                <button onClick={() => remove(r.id)} style={{ color: c.muted }}><Trash2 size={13} /></button>
+              </div>
+            ))}
+          </Sheet>
         );
       })}
 
-      <div className="px-4">
-        <Sheet c={c} className="p-4">
-          {[[t("subtotal"), produce], [`${t("platform_fee")} 2%`, fee], [t("your_half"), trans / 2]].map(([l, v], i) => (
-            <div key={i} className="flex justify-between py-1 text-sm">
-              <span style={{ color: c.muted }}>{l}</span><span style={{ ...num, color: c.ink }}>{inr1(v)}</span>
-            </div>
-          ))}
-          <div className="flex justify-between py-1 text-sm">
-            <span style={{ color: c.muted }}>{t("farmer_half")}</span>
-            <span style={{ ...num, color: c.muted }}>{inr1(trans / 2)}</span>
-          </div>
-          <div className="mt-2 flex items-center justify-between border-t pt-3" style={{ borderColor: c.line }}>
-            <span className="text-sm font-bold" style={{ color: c.ink }}>{t("total")}</span>
-            <span style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 22, color: c.ink }}>{inr(total)}</span>
-          </div>
-          <div className="mt-2 flex items-center justify-between rounded-xl px-3 py-2" style={{ background: c.goldSoft }}>
-            <span className="text-xs font-bold" style={{ color: c.gold }}>{t("you_save")}</span>
-            <span className="text-sm font-bold" style={{ ...num, color: c.gold }}>{inr(shelf - total)}</span>
-          </div>
-        </Sheet>
-      </div>
-
-      <div className="mt-3 px-4">
-        <Sheet c={c} className="flex items-center gap-3 p-4">
-          <LockBox c={c} open={false} size={62} />
-          <p className="text-xs leading-relaxed" style={{ color: c.muted }}>{t("escrow_p")}</p>
-        </Sheet>
-      </div>
+      <Sheet c={c} className="p-3.5 space-y-1.5 text-xs">
+        <div className="flex justify-between" style={{ color: c.muted }}>
+          <span>{t("subtotal")}</span><span style={num}>{inr1(produce)}</span>
+        </div>
+        <div className="flex justify-between" style={{ color: c.muted }}>
+          <span>{t("platform_fee")} 2%</span><span style={num}>{inr1(fee)}</span>
+        </div>
+        <div className="flex justify-between" style={{ color: c.muted }}>
+          <span>{t("your_half")}</span><span style={num}>{inr1(trans / 2)}</span>
+        </div>
+        <div className="flex justify-between pt-2 border-t font-bold text-sm" style={{ borderColor: c.line, color: c.ink }}>
+          <span>{t("total")}</span><span style={num}>{inr(total)}</span>
+        </div>
+      </Sheet>
 
       <ActionBar c={c} wide={wide} lift={wide ? 0 : 62} left={`${rows.length} ${t("items_word")}`} right={inr(total)} label={t("place")} onClick={placeOrder} />
     </div>
@@ -1665,87 +1612,37 @@ const STEPS = ["st_placed", "st_held", "st_picked", "st_transit", "st_delivered"
 function OrdersScreen({ c, t, lang, orders, advance, rate, go }) {
   if (!orders.length) return (
     <div className="px-6 py-16 text-center">
-      <FolkFigure c={c} kind="van" size={110} />
-      <h2 className="mt-3" style={{ fontFamily: FD, fontWeight: 700, fontSize: 21, color: c.ink }}>{t("orders_empty")}</h2>
-      <button onClick={() => go("shop")} className="mt-6 rounded-md font-bold"
-        style={{ background: c.green, color: "#fff", height: 46, padding: "0 26px", boxShadow: `0 3px 0 0 ${c.greenDeep}` }}>
+      <PackageCheck size={48} className="mx-auto mb-3" style={{ color: c.muted }} />
+      <h2 style={{ fontFamily: FD, fontWeight: 700, fontSize: 20, color: c.ink }}>{t("orders_empty")}</h2>
+      <button onClick={() => go("shop")} className="mt-5 rounded-lg font-semibold text-xs"
+        style={{ background: c.green, color: "#fff", height: 40, padding: "0 20px" }}>
         {t("shop_now")}
       </button>
     </div>
   );
   return (
-    <div className="space-y-3 px-4 pb-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+    <div className="space-y-3 px-4 pb-4">
       {orders.map(o => {
         const f = FARMERS.find(x => x.id === o.fid), done = o.step >= 5;
         return (
           <Sheet c={c} key={o.id} className="overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2.5" style={{ background: c.raise, borderBottom: `1px solid ${c.line}` }}>
+            <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ background: c.raise, borderColor: c.line }}>
               <span className="text-xs font-bold" style={{ ...num, color: c.ink }}>{o.code}</span>
-              <Pill c={c} tone={done ? "green" : o.step >= 4 ? "green" : "gold"}>{t(STEPS[o.step])}</Pill>
+              <Pill c={c} tone={done ? "green" : "gold"}>{t(STEPS[o.step])}</Pill>
               <span className="ml-auto text-xs" style={{ color: c.muted }}>{o.date}</span>
             </div>
-            <div className="flex gap-3 p-3">
-              <LockBox c={c} open={done} size={64} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <FarmerFace id={f.id} size={26} c={c} />
-                  <span className="truncate text-sm font-bold" style={{ color: c.ink }}>{f.store[lang]}</span>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {o.items.map(it => {
-                    const p = PRODUCTS.find(x => x.id === it.id);
-                    return (
-                      <span key={it.id} className="flex items-center gap-1 rounded-md px-2 py-1 text-xs"
-                        style={{ background: c.raise, color: c.ink }}>
-                        <Produce id={p.id} size={18} />{p.name[lang]} <b style={num}>×{it.qty}</b>
-                      </span>
-                    );
-                  })}
+            <div className="p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <InitialsAvatar id={f.id} size={34} c={c} />
+                <div>
+                  <div className="text-xs font-bold" style={{ color: c.ink }}>{f.store[lang]}</div>
+                  <div className="text-xs" style={{ color: c.muted }}>{o.items.length} {t("items_word")}</div>
                 </div>
               </div>
-              <span style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 18, color: c.ink }}>{inr(o.total)}</span>
-            </div>
-
-            <div className="px-3 pb-3">
-              <div className="flex items-center gap-1">
-                {STEPS.map((s, i) => (
-                  <React.Fragment key={s}>
-                    <span className="grid shrink-0 place-items-center rounded-md"
-                      style={{
-                        width: 18, height: 18, background: i <= o.step ? c.green : c.raise,
-                        border: `1px solid ${i <= o.step ? c.green : c.line}`, color: "#fff",
-                      }}>{i <= o.step && <Check size={10} />}</span>
-                    {i < 5 && <span className="h-0.5 flex-1" style={{ background: i < o.step ? c.green : c.line }} />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="mt-1.5 flex items-center gap-2 text-xs" style={{ color: done ? c.green : c.gold }}>
-                {done ? <Wallet size={12} /> : <Lock size={12} />}
-                {done ? `${t("released")} ${inr(o.farmerPayout)} → ${f.name[lang]}` : `${t("held")} ${inr(o.total)}`}
-              </div>
-
-              {o.step >= 4 && o.loss > 0 && (
-                <div className="mt-3 rounded-xl p-3" style={{ background: c.greenSoft }}>
-                  <div className="flex items-center gap-1.5">
-                    <Shield size={13} style={{ color: c.green }} />
-                    <span className="text-xs font-bold" style={{ color: c.green }}>{t("transit_loss")}</span>
-                  </div>
-                  <div className="mt-2 flex gap-4 text-xs" style={{ color: c.green }}>
-                    <span>{t("picked_qty")} <b style={num}>{o.pickup}kg</b></span>
-                    <span>{t("del_qty")} <b style={num}>{o.pickup - o.loss}kg</b></span>
-                  </div>
-                  <p className="mt-1.5 text-xs leading-relaxed" style={{ color: c.green }}>{o.loss} kg {t("loss_covered")}</p>
-                </div>
-              )}
-
-              <div className="mt-3 flex items-center gap-2">
-                {o.step >= 4 && (o.rated ? <Pill c={c} tone="green">{t("rated")}</Pill>
-                  : <div className="flex items-center gap-1">
-                      <span className="text-xs" style={{ color: c.muted }}>{t("rate_farmer")}</span>
-                      {[1, 2, 3, 4, 5].map(n => <button key={n} onClick={() => rate(o.id)}><Star size={15} style={{ color: c.goldBright }} /></button>)}
-                    </div>)}
+              <div className="text-right">
+                <div style={{ ...num, fontFamily: FD, fontWeight: 700, fontSize: 16, color: c.ink }}>{inr(o.total)}</div>
                 {o.step < 5 && (
-                  <button onClick={() => advance(o.id)} className="ml-auto rounded-md px-3 py-1.5 text-xs font-bold"
+                  <button onClick={() => advance(o.id)} className="mt-1 rounded px-2 py-0.5 text-xs font-semibold"
                     style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }}>{t("advance")}</button>
                 )}
               </div>
@@ -1772,384 +1669,819 @@ function MandiScreen({ c, t, lang, openProduct }) {
   ];
   const top = Math.max(...bars.map(b => b.v));
   return (
-    <div className="pb-4">
-      <div className="px-4">
-        <div style={{
-          background: c.slate, borderRadius: RAD.sheet, border: `7px solid ${c.wood}`,
-          boxShadow: `inset 0 0 60px rgba(0,0,0,.5), ${lift(c)}`,
-        }}>
-          <div className="flex items-baseline justify-between px-4 pb-2 pt-4">
-            <span style={{ fontFamily: FD, fontSize: 18, color: c.chalk }}>{lang === 0 ? "Mandi Bhav" : "मंडी भाव"}</span>
-            <span style={{ ...num, fontSize: 11, color: c.chalk, opacity: .65 }}>13 SEP · 18:40</span>
-          </div>
-          <div className="mx-4" style={{ height: 1, background: c.chalk, opacity: .3 }} />
-          <div className="px-2 pb-3 pt-1">
-            {rows.map(x => (
-              <button key={x.pid} onClick={() => setSel(x.pid)} className="flex w-full items-center gap-2 px-2 py-2.5 text-left"
-                style={{
-                  borderBottom: `1px dashed rgba(237,231,214,.2)`,
-                  background: sel === x.pid ? "rgba(250,246,240,.09)" : "transparent",
-                }}>
-                <Produce id={x.pid} size={24} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm" style={{ color: c.chalk }}>{x.p.name[lang]}</span>
-                  <span className="block text-xs" style={{ color: c.chalk, opacity: .6 }}>{x.centre[lang]} · {x.arrivals}t</span>
-                </span>
-                <Spark pts={x.trend} c={c} size={[48, 20]} />
-                <span style={{ ...num, fontFamily: FD, fontSize: 17, color: c.chalk, width: 52, textAlign: "right" }}>
-                  {x.modal.toLocaleString("en-IN")}
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="px-4 pb-3 text-xs" style={{ color: c.chalk, opacity: .5 }}>
-            {lang === 0 ? "₹ per quintal · shape follows Agmarknet · sample values" : "₹ प्रति क्विंटल · ढाँचा Agmarknet जैसा · नमूना आँकड़े"}
-          </div>
+    <div className="pb-4 px-4 space-y-3">
+      <div className="rounded-xl p-4" style={{ background: c.surface, border: `1px solid ${c.line}` }}>
+        <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: c.line }}>
+          <span style={{ fontFamily: FD, fontWeight: 700, fontSize: 16, color: c.ink }}>{lang === 0 ? "Mandi Reference Board" : "मंडी संदर्भ भाव"}</span>
+          <span className="text-xs" style={{ color: c.muted }}>Daily Feed</span>
+        </div>
+        <div className="mt-2 space-y-1">
+          {rows.map(x => (
+            <button key={x.pid} onClick={() => setSel(x.pid)} className="flex w-full items-center justify-between p-2 rounded-lg text-left"
+              style={{ background: sel === x.pid ? c.raise : "transparent" }}>
+              <div className="flex items-center gap-2">
+                <Produce id={x.pid} size={22} />
+                <span className="text-xs font-semibold" style={{ color: c.ink }}>{x.p.name[lang]}</span>
+              </div>
+              <span style={{ ...num, fontWeight: 700, fontSize: 13, color: c.ink }}>₹{x.p.mandi}/kg</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="mt-4 px-4">
-        <Sheet c={c} className="p-4">
-          <div className="flex items-center gap-2">
-            <Produce id={r.pid} size={30} />
-            <span className="text-sm font-bold" style={{ color: c.ink }}>{r.p.name[lang]}</span>
-            <span className="ml-auto text-xs" style={{ color: c.muted }}>{lang === 0 ? "per" : "प्रति"} {r.p.unit[lang]}</span>
-          </div>
-          <div className="mt-3 space-y-2.5">
-            {bars.map((b, i) => (
-              <div key={i}>
-                <div className="mb-1 flex items-baseline justify-between gap-2">
-                  <span className="text-xs" style={{ color: c.muted }}>{b.l[lang]}</span>
-                  <span className="text-sm font-bold" style={{ ...num, color: b.col }}>{inr1(b.v)}</span>
-                </div>
-                <div className="h-2 rounded-md" style={{ background: c.raise }}>
-                  <div className="h-2 rounded-md" style={{ width: `${(b.v / top) * 100}%`, background: b.col }} />
-                </div>
+      <Sheet c={c} className="p-4">
+        <div className="flex items-center gap-2 pb-2 border-b" style={{ borderColor: c.line }}>
+          <Produce id={r.pid} size={26} />
+          <span className="text-xs font-bold" style={{ color: c.ink }}>{r.p.name[lang]} Price Journey</span>
+        </div>
+        <div className="mt-3 space-y-2">
+          {bars.map((b, i) => (
+            <div key={i}>
+              <div className="flex justify-between text-xs mb-1">
+                <span style={{ color: c.muted }}>{b.l[lang]}</span>
+                <span className="font-bold" style={{ ...num, color: b.col }}>{inr1(b.v)}</span>
               </div>
-            ))}
-          </div>
-          <p className="mt-3 rounded-xl p-3 text-xs leading-relaxed" style={{ background: c.greenSoft, color: c.green }}>
-            {lang === 0
-              ? `The auction number is not the farmer's number. After commission, loading and the trip in, ${inr1(r.p.mandi)} leaves about ${inr1(r.nets)} in hand. Sold here it leaves ${inr1(r.p.farmer)}, ${Math.round((r.p.farmer / r.nets - 1) * 100)}% more.`
-              : `नीलामी का आँकड़ा किसान का आँकड़ा नहीं है। आढ़त, लदाई और फेरे के बाद ${inr1(r.p.mandi)} में से हाथ आते हैं ${inr1(r.nets)}। यहाँ बेचने पर मिलते हैं ${inr1(r.p.farmer)}, ${Math.round((r.p.farmer / r.nets - 1) * 100)}% ज़्यादा।`}
-          </p>
-          <button onClick={() => openProduct(r.pid)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-md font-bold"
-            style={{ height: 42, background: c.greenSoft, color: c.green, fontSize: 13 }}>
-            {lang === 0 ? "See farms listing this" : "इसे बेचने वाले खेत देखें"} <ArrowRight size={15} />
-          </button>
-        </Sheet>
-      </div>
+              <div className="h-1.5 rounded-full" style={{ background: c.raise }}>
+                <div className="h-1.5 rounded-full" style={{ width: `${(b.v / top) * 100}%`, background: b.col }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Sheet>
     </div>
   );
 }
 
 /* ════════════════════════════════════════════════════════════
-   FARMER. Larger type, one action per screen
+   FARMER SCREENS (Consolidated KPI Cards & Trends)
    ════════════════════════════════════════════════════════════ */
 const ME = "f1";
 const big = { fontFamily: FD, fontWeight: 700 };
 
-const Says = ({ c, children }) => (
-  <p className="mt-2 flex gap-2 text-sm leading-relaxed" style={{ color: c.muted }}>
-    <span style={{ color: c.green }}>→</span>{children}
-  </p>
-);
+/* ── Weather Visual Helper ─────────────────────────────────── */
+function getWeatherVisuals(code, lang = 0) {
+  if (code === 0) return { label: lang === 0 ? "Clear Sky" : "साफ़ आसमान", Icon: Sun, color: "#F59E0B", bg: "/weather/sunny.jpg" };
+  if ([1, 2].includes(code)) return { label: lang === 0 ? "Partly Cloudy" : "आंशिक बादल", Icon: CloudSun, color: "#FBBF24", bg: "/weather/clear.jpg" };
+  if (code === 3) return { label: lang === 0 ? "Overcast" : "घने बादल", Icon: Cloud, color: "#94A3B8", bg: "/weather/cloudy.jpg" };
+  if ([45, 48].includes(code)) return { label: lang === 0 ? "Foggy" : "कोहरा", Icon: Cloud, color: "#94A3B8", bg: "/weather/cloudy.jpg" };
+  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { label: lang === 0 ? "Rain / Showers" : "बारिश", Icon: CloudRain, color: "#60A5FA", bg: "/weather/rain.jpg" };
+  if ([95, 96, 99].includes(code)) return { label: lang === 0 ? "Thunderstorm" : "तूफ़ान व गरज", Icon: CloudLightning, color: "#C084FC", bg: "/weather/cloudy.jpg" };
+  return { label: lang === 0 ? "Mild" : "सामान्य", Icon: CloudSun, color: "#4ADE80", bg: "/weather/clear.jpg" };
+}
 
-function FarmerHome({ c, t, lang, go, orders, listings, startAdd }) {
+/* ── Auto-Sliding Farmer Hero Carousel (2 Slides) ─────────── */
+function FarmerHeroCarousel({ c, t, lang, go, onRainAlert, wide }) {
+  const [slide, setSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [weather, setWeather] = useState(null);
+  const touchStartX = useRef(null);
+  const autoSlideTimer = useRef(null);
+
+  // Fetch Open-Meteo weather data for Ghaziabad (28.6692° N, 77.4538° E)
+  useEffect(() => {
+    let mounted = true;
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6692&longitude=77.4538&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FKolkata")
+      .then(res => res.json())
+      .then(data => {
+        if (mounted && data?.current && data?.daily) {
+          setWeather(data);
+          const tomorrowRainProb = data.daily.precipitation_probability_max?.[1] || 0;
+          if (onRainAlert && tomorrowRainProb > 50) {
+            onRainAlert(tomorrowRainProb);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, [onRainAlert]);
+
+  // Auto-advance every 5.5 seconds
+  useEffect(() => {
+    if (isPaused) return;
+    autoSlideTimer.current = setInterval(() => {
+      setSlide(s => (s === 0 ? 1 : 0));
+    }, 5500);
+    return () => clearInterval(autoSlideTimer.current);
+  }, [isPaused]);
+
+  const handleManualNav = newSlide => {
+    setSlide(newSlide);
+    setIsPaused(true);
+    clearTimeout(autoSlideTimer.current);
+    setTimeout(() => setIsPaused(false), 5500);
+  };
+
+  const handleTouchStart = e => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = e => {
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    if (diff > 35) {
+      handleManualNav(1); // Swipe left
+    } else if (diff < -35) {
+      handleManualNav(0); // Swipe right
+    }
+    touchStartX.current = null;
+  };
+
+  // Weather fallback & calculations
+  const currentTemp = weather?.current?.temperature_2m ?? 28;
+  const weatherCode = weather?.current?.weather_code ?? 1;
+  const humidity = weather?.current?.relative_humidity_2m ?? 62;
+  const wind = weather?.current?.wind_speed_10m ?? 8.2;
+  const currentVisual = getWeatherVisuals(weatherCode, lang);
+
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const daysHi = ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"];
+  const todayIndex = new Date().getDay();
+
+  const forecastDays = useMemo(() => {
+    return [0, 1, 2, 3, 4].map(i => {
+      const dayIdx = (todayIndex + i) % 7;
+      const dayName = i === 0 ? (lang === 0 ? "Today" : "आज") : (lang === 0 ? days[dayIdx] : daysHi[dayIdx]);
+      const code = weather?.daily?.weather_code?.[i] ?? (i === 1 ? 61 : i === 2 ? 2 : 1);
+      const maxT = Math.round(weather?.daily?.temperature_2m_max?.[i] ?? (32 - (i === 1 ? 4 : 0)));
+      const minT = Math.round(weather?.daily?.temperature_2m_min?.[i] ?? (24 - (i === 1 ? 2 : 0)));
+      const rainProb = weather?.daily?.precipitation_probability_max?.[i] ?? (i === 1 ? 65 : 15);
+      const vis = getWeatherVisuals(code, lang);
+      return { dayName, code, maxT, minT, rainProb, vis };
+    });
+  }, [weather, lang, todayIndex]);
+
+  return (
+    <div
+      className={"relative overflow-hidden rounded-2xl text-white select-none " + (wide ? "min-h-[380px]" : "min-h-[390px]")}
+      style={{
+        background: "#133522",
+        boxShadow: liftHi(c),
+      }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}>
+
+      {/* ── Slide 1: Family Welcome ── */}
+      <div
+        className={"absolute inset-0 transition-opacity duration-700 " +
+          (slide === 0 ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
+        
+        {wide ? (
+          /* ── Desktop Wide Layout ── */
+          <div className="relative h-full flex items-center p-8 min-h-[380px]">
+            {/* Photo on right */}
+            <div className="absolute right-0 top-0 bottom-0 w-3/5 pointer-events-none overflow-hidden">
+              <img
+                src="/farmer-family.jpg"
+                alt="Farmer family in the field"
+                className="h-full w-full object-cover"
+                style={{ objectPosition: "52% 10%" }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(90deg, #133522 0%, rgba(19,53,34,0.65) 15%, rgba(19,53,34,0.12) 34%, transparent 55%)",
+                }}
+              />
+            </div>
+
+            {/* Text on left */}
+            <div className="relative z-10 max-w-md">
+              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold backdrop-blur-md mb-2.5 border"
+                style={{ background: "rgba(19,53,34,0.75)", borderColor: "rgba(255,255,255,0.25)", color: "#FFFFFF" }}>
+                <Sparkles size={12} className="text-amber-300" />
+                <span>{lang === 0 ? "🌾 Verified Farmer" : "🌾 सत्यापित किसान"}</span>
+              </div>
+
+              <h1 style={{ fontFamily: FD, fontWeight: 700, fontSize: 26, lineHeight: 1.15, textShadow: "0 2px 10px rgba(0,0,0,0.65), 0 1px 3px rgba(0,0,0,0.85)" }}>
+                {lang === 0 ? "Good morning, Ramesh." : "सुप्रभात, रमेश जी।"}
+              </h1>
+
+              <p className="mt-2.5 text-xs md:text-sm leading-relaxed max-w-sm"
+                style={{ color: "rgba(255, 255, 255, 0.95)", textShadow: "0 2px 8px rgba(0,0,0,0.65), 0 1px 3px rgba(0,0,0,0.85)" }}>
+                {lang === 0
+                  ? "Track today's earnings, orders, and deliveries — all in one place."
+                  : "आज की कमाई, नए ऑर्डर और डिलीवरी — सब कुछ एक ही जगह देखें।"}
+              </p>
+
+              <div className="mt-4 flex items-center gap-2">
+                <button
+                  onClick={() => go("earn")}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-200 hover:text-white transition-colors"
+                  style={{ textShadow: "0 1px 4px rgba(0,0,0,0.85)" }}>
+                  <span>{lang === 0 ? "View today's summary" : "आज का सारांश देखें"}</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* ── Mobile Layout (Full Photo + Clean Bottom Text) ── */
+          <div className="relative h-full min-h-[390px] flex flex-col justify-end p-4 pb-7">
+            {/* Full coverage photo: Natural sunlight, NO green overlay on the family */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <img
+                src="/farmer-family.jpg"
+                alt="Farmer family in the field"
+                className="h-full w-full object-cover"
+                style={{ objectPosition: "52% 8%" }}
+              />
+              {/* Scrim strictly behind the bottom text ONLY */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-48"
+                style={{
+                  background: "linear-gradient(0deg, rgba(8,24,15,0.94) 0%, rgba(8,24,15,0.7) 48%, rgba(8,24,15,0.15) 78%, transparent 100%)",
+                }}
+              />
+            </div>
+
+            {/* Text block strictly in the bottom third below the faces */}
+            <div className="relative z-10 w-full">
+              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold backdrop-blur-md mb-2 border"
+                style={{ background: "rgba(8,24,15,0.78)", borderColor: "rgba(255,255,255,0.25)", color: "#FFFFFF" }}>
+                <Sparkles size={12} className="text-amber-300" />
+                <span>{lang === 0 ? "🌾 Verified Farmer" : "🌾 सत्यापित किसान"}</span>
+              </div>
+
+              <h1 style={{ fontFamily: FD, fontWeight: 700, fontSize: 23, lineHeight: 1.15, textShadow: "0 2px 10px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.9)" }}>
+                {lang === 0 ? "Good morning, Ramesh." : "सुप्रभात, रमेश जी।"}
+              </h1>
+
+              <p className="mt-1 text-xs leading-relaxed"
+                style={{ color: "rgba(255, 255, 255, 0.95)", textShadow: "0 2px 8px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.9)" }}>
+                {lang === 0
+                  ? "Track today's earnings, orders, and deliveries — all in one place."
+                  : "आज की कमाई, नए ऑर्डर और डिलीवरी — सब कुछ एक ही जगह देखें।"}
+              </p>
+
+              <div className="mt-2.5 flex items-center gap-2">
+                <button
+                  onClick={() => go("earn")}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-200 hover:text-white transition-colors"
+                  style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>
+                  <span>{lang === 0 ? "View today's summary" : "आज का सारांश देखें"}</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Slide 2: Weather Forecast ── */}
+      <div
+        className={"absolute inset-0 flex flex-col justify-between p-5 md:p-8 transition-opacity duration-700 " +
+          (slide === 1 ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
+        
+        {/* Weather Background Image with glassmorphism gradient scrim */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <img
+            src={currentVisual.bg || "/weather-bg.jpg"}
+            alt="Weather Forecast Background"
+            className="h-full w-full object-cover transition-all duration-1000 scale-105"
+            style={{ objectPosition: "center 38%" }}
+          />
+          {/* Multi-layer gradient scrim for crisp readability */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(180deg, rgba(10,26,17,0.78) 0%, rgba(10,26,17,0.56) 40%, rgba(6,17,11,0.92) 100%)",
+            }}
+          />
+          <div className="absolute inset-0 backdrop-blur-[0.5px]" />
+        </div>
+
+        {/* Top Header & Badge */}
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold backdrop-blur-md border shadow-sm"
+            style={{ background: "rgba(10,26,17,0.78)", borderColor: "rgba(255,255,255,0.25)", color: "#FFFFFF" }}>
+            <CloudSun size={13} className="text-amber-300" />
+            <span>{lang === 0 ? "🌤️ Live Weather • Loni, Ghaziabad" : "🌤️ लाइव मौसम • लोनी, ग़ाज़ियाबाद"}</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-3 text-xs text-emerald-100 font-medium px-3 py-1 rounded-full backdrop-blur-md border border-white/15"
+            style={{ background: "rgba(10,26,17,0.65)" }}>
+            <span className="flex items-center gap-1"><Droplets size={12} className="text-blue-300" /> {humidity}% {lang === 0 ? "Humidity" : "नमी"}</span>
+            <span className="flex items-center gap-1"><Leaf size={12} className="text-emerald-300" /> {wind} km/h {lang === 0 ? "Wind" : "हवा"}</span>
+          </div>
+        </div>
+
+        {/* Middle Main Temperature & Conditions */}
+        <div className="relative z-10 my-auto py-2">
+          <div className="flex items-center gap-4">
+            <div className="grid h-14 w-14 sm:h-16 sm:w-16 place-items-center rounded-2xl backdrop-blur-md border shrink-0 shadow-lg"
+              style={{ background: "rgba(255,255,255,0.18)", borderColor: "rgba(255,255,255,0.3)" }}>
+              <currentVisual.Icon size={34} style={{ color: currentVisual.color }} />
+            </div>
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span style={{ ...big, ...num, fontSize: 36, lineHeight: 1, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>{Math.round(currentTemp)}°C</span>
+                <span className="text-sm font-semibold text-emerald-100" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>{currentVisual.label}</span>
+              </div>
+              <p className="mt-1 text-xs text-white/95 max-w-sm" style={{ textShadow: "0 1px 5px rgba(0,0,0,0.85)" }}>
+                {lang === 0
+                  ? "Optimal harvest conditions for tomatoes & leafy greens today."
+                  : "टमाटर और पत्तेदार सब्ज़ियों की कटाई के लिए आज उत्तम मौसम।"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom 5-Day Forecast Strip */}
+        <div className="relative z-10 pt-2.5 border-t grid grid-cols-5 gap-1.5 sm:gap-2 text-center"
+          style={{ borderColor: "rgba(255,255,255,0.22)" }}>
+          {forecastDays.map((item, idx) => (
+            <div key={idx} className="flex flex-col items-center justify-between rounded-xl py-1.5 px-1 backdrop-blur-md border transition-all shadow-sm"
+              style={{
+                background: idx === 0 ? "rgba(255,255,255,0.24)" : "rgba(10,26,17,0.72)",
+                borderColor: idx === 0 ? "rgba(255,255,255,0.38)" : "rgba(255,255,255,0.15)",
+              }}>
+              <span className="text-[10px] sm:text-[11px] font-semibold text-white/95">
+                {item.dayName}
+              </span>
+              <div className="my-1">
+                <item.vis.Icon size={16} style={{ color: item.vis.color }} />
+              </div>
+              <div className="text-[11px] sm:text-xs font-bold leading-none text-white" style={num}>
+                {item.maxT}°
+                <span className="ml-0.5 text-[9px] sm:text-[10px] font-normal text-white/75">{item.minT}°</span>
+              </div>
+              {item.rainProb > 40 ? (
+                <span className="mt-1 inline-flex items-center rounded px-1 py-0.2 text-[8px] sm:text-[9px] font-bold bg-blue-500/40 text-blue-100 border border-blue-400/40">
+                  💧{item.rainProb}%
+                </span>
+              ) : (
+                <span className="mt-1 text-[8px] sm:text-[9px] text-white/80">
+                  {item.vis.label.split(" ")[0]}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Carousel Dot Indicators (Bottom Right) ── */}
+      <div className="absolute bottom-2.5 right-4 z-20 flex items-center gap-1.5">
+        <button
+          onClick={() => handleManualNav(0)}
+          aria-label="Slide 1 - Welcome"
+          className={"h-1.5 transition-all duration-300 rounded-full " + (slide === 0 ? "w-6 bg-white" : "w-1.5 bg-white/40 hover:bg-white/70")}
+        />
+        <button
+          onClick={() => handleManualNav(1)}
+          aria-label="Slide 2 - Weather"
+          className={"h-1.5 transition-all duration-300 rounded-full " + (slide === 1 ? "w-6 bg-white" : "w-1.5 bg-white/40 hover:bg-white/70")}
+        />
+      </div>
+
+      {/* Subtle Desktop Left/Right Arrows */}
+      {wide && (
+        <>
+          <button
+            onClick={() => handleManualNav(slide === 0 ? 1 : 0)}
+            aria-label="Previous Slide"
+            className="hidden md:grid absolute left-2 top-1/2 -translate-y-1/2 z-20 h-7 w-7 place-items-center rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity">
+            <ArrowLeft size={14} />
+          </button>
+          <button
+            onClick={() => handleManualNav(slide === 0 ? 1 : 0)}
+            aria-label="Next Slide"
+            className="hidden md:grid absolute right-2 top-1/2 -translate-y-1/2 z-20 h-7 w-7 place-items-center rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity">
+            <ArrowRight size={14} />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Smart Notifications Panel ─────────────────────────────── */
+function SmartNotifications({ c, t, lang, rainAlertProb }) {
+  const [notifications, setNotifications] = useState([
+    {
+      id: "n_rain",
+      type: "weather",
+      Icon: CloudRain,
+      iconColor: "#2563EB",
+      iconBg: "rgba(59,130,246,0.12)",
+      title: ["Rain Alert: Heavy Rain Expected", "बारिश का अलर्ट: भारी बारिश की संभावना"],
+      desc: [
+        `Tomorrow's rain probability is ${rainAlertProb || 65}%. Pause spray operations & ensure trench drainage.`,
+        `कल बारिश की संभावना ${rainAlertProb || 65}% है। कीटनाशक छिड़काव रोकें और जल निकासी दुरुस्त रखें।`
+      ],
+      time: ["10m ago", "10 मिनट पहले"],
+      read: false
+    },
+    {
+      id: "n_mandi",
+      type: "price",
+      Icon: TrendingUp,
+      iconColor: "#16A34A",
+      iconBg: "rgba(22,163,74,0.12)",
+      title: ["Mandi Alert: Tomato Price Up +₹2.5/kg", "मंडी अलर्ट: टमाटर के भाव में +₹2.5/किलो की तेज़ी"],
+      desc: [
+        "Modal rate reached ₹22/kg in Sahibabad & Ghazipur mandis. Demand is strong for A-Grade crates.",
+        "साहिबाबाद और ग़ाज़ीपुर मंडी में मॉडल भाव ₹22/किलो पहुँचा। A-ग्रेड क्रेट की भारी मांग।"
+      ],
+      time: ["1h ago", "1 घंटा पहले"],
+      read: false
+    },
+    {
+      id: "n_crop",
+      type: "crop",
+      Icon: Sprout,
+      iconColor: "#059669",
+      iconBg: "rgba(5,150,105,0.12)",
+      title: ["Crop Reminder: Tomato Drip Cycle", "फसल अनुस्मारक: टमाटर ड्रिप सिंचाई चक्र"],
+      desc: [
+        "Scheduled 25-min evening drip irrigation recommended for Plot 2 tomato beds.",
+        "खेत संख्या 2 के टमाटर के लिए शाम को 25 मिनट का ड्रिप चक्र चलाने का समय।"
+      ],
+      time: ["3h ago", "3 घंटे पहले"],
+      read: false
+    },
+    {
+      id: "n_scheme",
+      type: "scheme",
+      Icon: Landmark,
+      iconColor: "#D98E18",
+      iconBg: "rgba(217,142,24,0.14)",
+      title: ["Govt Scheme: PMKSY 55% Drip Subsidy", "सरकारी योजना: PMKSY 55% ड्रिप सब्सिडी"],
+      desc: [
+        "UP Horticulture Dept opened application window for micro-irrigation equipment subsidy.",
+        "उद्यान विभाग यूपी ने ड्रिप एवं सूक्ष्म सिंचाई यंत्रों पर 55% अनुदान पोर्टल शुरू किया।"
+      ],
+      time: ["1d ago", "1 दिन पहले"],
+      read: true
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const toggleRead = id => {
+    setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: !n.read } : n));
+  };
+
+  const markAllRead = () => {
+    setNotifications(ns => ns.map(n => ({ ...n, read: true })));
+  };
+
+  return (
+    <Sheet c={c} className="p-4" tone={c.surface}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="grid h-6 w-6 place-items-center rounded-full" style={{ background: c.greenSoft, color: c.green }}>
+            <Bell size={13} />
+          </div>
+          <div className="text-xs font-semibold uppercase" style={{ color: c.muted, letterSpacing: "0.08em" }}>
+            {t("smart_alerts")}
+          </div>
+          {unreadCount > 0 && (
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+              style={{ background: c.green }}>
+              {unreadCount} {t("unread_alerts")}
+            </span>
+          )}
+        </div>
+        {unreadCount > 0 && (
+          <button onClick={markAllRead} className="text-xs font-semibold hover:opacity-80 transition-opacity"
+            style={{ color: c.green }}>
+            {t("mark_all_read")}
+          </button>
+        )}
+      </div>
+
+      {/* List of Notification Rows */}
+      <div className="space-y-2">
+        {notifications.map(n => {
+          const isUnread = !n.read;
+          return (
+            <div
+              key={n.id}
+              onClick={() => toggleRead(n.id)}
+              className="group flex cursor-pointer items-start gap-3 rounded-xl p-2.5 transition-all"
+              style={{
+                background: isUnread ? c.raise : "transparent",
+                border: isUnread ? `1px solid ${c.line}` : "1px solid transparent",
+              }}>
+              {/* Category Icon */}
+              <div className="grid shrink-0 h-9 w-9 place-items-center rounded-lg mt-0.5"
+                style={{ background: n.iconBg, color: n.iconColor }}>
+                <n.Icon size={18} />
+              </div>
+
+              {/* Text content */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-1">
+                  <span className={"text-xs leading-tight " + (isUnread ? "font-bold" : "font-semibold")}
+                    style={{ color: c.ink }}>
+                    {n.title[lang]}
+                  </span>
+                  <span className="shrink-0 text-[10px]" style={{ color: c.muted }}>
+                    {n.time[lang]}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed" style={{ color: isUnread ? c.ink : c.muted }}>
+                  {n.desc[lang]}
+                </p>
+              </div>
+
+              {/* Unread indicator dot & chevron */}
+              <div className="flex shrink-0 items-center gap-1.5 self-center">
+                {isUnread && (
+                  <span className="h-2 w-2 rounded-full" style={{ background: c.green }} />
+                )}
+                <ChevronRight size={14} className="transition-transform group-hover:translate-x-0.5" style={{ color: c.muted }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Sheet>
+  );
+}
+
+/* Consolidated KPI & Dashboard for Farmer (Rule 3) */
+function FarmerHome({ c, t, lang, go, orders, listings, startAdd, wide }) {
   const me = FARMERS.find(f => f.id === ME);
   const paid = orders.filter(o => o.step >= 5).reduce((s, o) => s + o.farmerPayout, 0);
   const locked = orders.filter(o => o.step < 5).reduce((s, o) => s + o.farmerPayout, 0);
   const fresh = orders.filter(o => o.step < 4).length;
   const tom = PRODUCTS.find(p => p.id === "p1");
+  const [rainProb, setRainProb] = useState(65);
+
+  // Sample weekly sparkline data
+  const weekSpark = [
+    { day: "Mon", v: 3100 }, { day: "Tue", v: 3400 }, { day: "Wed", v: 2900 },
+    { day: "Thu", v: 4200 }, { day: "Fri", v: 4600 }, { day: "Sat", v: 4820 }
+  ];
 
   return (
-    <div className="pb-4" style={{ fontSize: 16 }}>
-      <div className="px-4 pt-1">
-        <div className="relative overflow-hidden" style={{ borderRadius: RAD.sheet, background: c.green, boxShadow: liftHi(c) }}>
-          <Toran c={c} h={30} />
-          <div className="pointer-events-none absolute" style={{ right: -50, bottom: -60, opacity: .15 }}>
-            <Rangoli c={c} size={200} col="#fff" />
+    <div className="pb-4 px-4 space-y-3">
+      {/* ── Upper Section with Sticky-Until-Anchor Action Button ── */}
+      <div className="space-y-3">
+        {/* Auto-sliding Hero Carousel with Natural Color Family Slide & Live Weather Slide */}
+        <FarmerHeroCarousel c={c} t={t} lang={lang} go={go} onRainAlert={prob => setRainProb(prob)} wide={wide} />
+
+        {/* Consolidated Master Earnings & Liquidity Card */}
+        <Sheet c={c} className="p-4" tone={c.surface}>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase" style={{ color: c.muted, letterSpacing: "0.08em" }}>
+                {t("earned_today")}
+              </div>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <span style={{ ...big, ...num, fontSize: 32, color: c.green }}>{inr(paid + locked)}</span>
+                <span className="flex items-center text-xs font-bold" style={{ color: c.green }}>
+                  <TrendingUp size={12} className="mr-0.5 inline" /> +18.4%
+                </span>
+              </div>
+            </div>
+            <InitialsAvatar id={ME} size={44} c={c} verified />
           </div>
-          <div className="relative flex items-center gap-3 px-4 pt-2">
-            <FarmerFace id={ME} size={58} c={c} />
-            <div className="min-w-0">
-              <div style={{ color: "rgba(255,255,255,.8)", fontSize: 14 }}>{t("namaste")}</div>
-              <div className="truncate" style={{ ...big, fontSize: 21, color: "#fff" }}>{me.name[lang]}</div>
+
+          {/* Micro-trend sparkline chart */}
+          <div className="mt-2 h-14 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={weekSpark} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="farmSpark" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={c.green} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={c.green} stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="v" stroke={c.green} strokeWidth={2} fill="url(#farmSpark)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Consolidated Breakdown Columns */}
+          <div className="mt-3 grid grid-cols-2 gap-2 pt-3 border-t text-xs" style={{ borderColor: c.line }}>
+            <div className="p-2.5 rounded-lg" style={{ background: c.raise }}>
+              <div className="flex items-center gap-1.5" style={{ color: c.muted }}>
+                <Wallet size={13} style={{ color: c.green }} /> {t("money_in_hand")}
+              </div>
+              <div className="mt-1 font-bold text-sm" style={{ ...num, color: c.green }}>{inr(paid)}</div>
+            </div>
+            <div className="p-2.5 rounded-lg" style={{ background: c.raise }}>
+              <div className="flex items-center gap-1.5" style={{ color: c.muted }}>
+                <Lock size={13} style={{ color: c.gold }} /> {t("money_waiting")}
+              </div>
+              <div className="mt-1 font-bold text-sm" style={{ ...num, color: c.gold }}>{inr(locked)}</div>
             </div>
           </div>
-          <div className="relative px-4 pb-4 pt-4">
-            <div style={{ color: "rgba(255,255,255,.8)", fontSize: 14 }}>{t("earned_today")}</div>
-            <div style={{ ...big, ...num, fontSize: 42, color: "#fff", lineHeight: 1.1 }}>{inr(paid + locked)}</div>
-            <div style={{ color: "rgba(255,255,255,.8)", fontSize: 14 }}>{orders.length} {t("three_orders")}</div>
-          </div>
+        </Sheet>
+
+        {/* Smart Notifications Panel */}
+        <SmartNotifications c={c} t={t} lang={lang} rainAlertProb={rainProb} />
+
+        {/* Sticky-Until-Anchor "Add Crop" Action Button */}
+        <div
+          className="sticky z-30 pt-1 pointer-events-auto"
+          style={{ bottom: wide ? 24 : 76 }}>
+          <button
+            onClick={startAdd}
+            className="flex w-full items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 active:scale-[0.98]"
+            style={{
+              background: c.green,
+              color: "#fff",
+              height: 48,
+              fontSize: 15,
+              boxShadow: "0 8px 24px -2px rgba(24,63,41,0.45), 0 3px 10px rgba(0,0,0,0.15)",
+            }}>
+            <Plus size={18} /> {t("add_crop")}
+          </button>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-3 px-4 lg:grid-cols-4">
-        <Sheet c={c} className="p-3">
-          <LockBox c={c} open={false} size={52} />
-          <div className="mt-1" style={{ color: c.muted, fontSize: 13 }}>{t("money_waiting")}</div>
-          <div style={{ ...big, ...num, fontSize: 22, color: c.gold }}>{inr(locked)}</div>
-        </Sheet>
-        <Sheet c={c} className="p-3">
-          <LockBox c={c} open={true} size={52} />
-          <div className="mt-1" style={{ color: c.muted, fontSize: 13 }}>{t("money_in_hand")}</div>
-          <div style={{ ...big, ...num, fontSize: 22, color: c.green }}>{inr(paid)}</div>
-        </Sheet>
-      </div>
-
-      <div className="mt-3 px-4">
-        <button onClick={startAdd} className="flex w-full items-center justify-center gap-2 rounded-md"
-          style={{ background: c.green, color: "#fff", height: 56, fontSize: 17, fontWeight: 700, boxShadow: `0 4px 0 0 ${c.greenDeep}` }}>
-          <Plus size={22} /> {t("add_crop")}
-        </button>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3 px-4 lg:grid-cols-4">
-        <button onClick={() => go("orders")}>
-          <Sheet c={c} className="flex items-center gap-2 p-3">
-            <span className="grid place-items-center rounded-md" style={{ width: 40, height: 40, background: c.redSoft, color: c.red }}>
-              <PackageCheck size={19} />
-            </span>
-            <span className="text-left">
-              <span className="block" style={{ ...big, ...num, fontSize: 19, color: c.ink }}>{fresh}</span>
-              <span className="block" style={{ color: c.muted, fontSize: 13 }}>{t("new_orders")}</span>
-            </span>
+      {/* Dispatch & Orders Summary */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <button onClick={() => go("orders")} className="text-left">
+          <Sheet c={c} className="p-3">
+            <div className="flex items-center justify-between text-xs" style={{ color: c.muted }}>
+              <span>{t("new_orders")}</span>
+              <PackageCheck size={14} style={{ color: c.green }} />
+            </div>
+            <div className="mt-1 font-bold text-lg" style={{ ...num, color: c.ink }}>{fresh}</div>
+            <div className="text-xs" style={{ color: c.muted }}>{orders.length} total orders</div>
           </Sheet>
         </button>
-        <button onClick={() => go("earn")}>
-          <Sheet c={c} className="flex items-center gap-2 p-3">
-            <span className="grid place-items-center rounded-md" style={{ width: 40, height: 40, background: c.goldSoft, color: c.gold }}>
-              <Truck size={19} />
-            </span>
-            <span className="text-left">
-              <span className="block" style={{ ...big, fontSize: 15, color: c.ink }}>6:10</span>
-              <span className="block" style={{ color: c.muted, fontSize: 13 }}>{t("see_route")}</span>
-            </span>
+
+        <button onClick={() => go("earn")} className="text-left">
+          <Sheet c={c} className="p-3">
+            <div className="flex items-center justify-between text-xs" style={{ color: c.muted }}>
+              <span>{t("see_route")}</span>
+              <Truck size={14} style={{ color: c.green }} />
+            </div>
+            <div className="mt-1 font-bold text-lg" style={{ color: c.ink }}>06:10 AM</div>
+            <div className="text-xs" style={{ color: c.muted }}>4 stops · 35 km</div>
           </Sheet>
         </button>
       </div>
 
-      <div className="mt-5 px-4">
-        <Sheet c={c} className="p-4">
-          <Stencil c={c}>{t("todays_mandi")}</Stencil>
-          <div className="mt-3 flex items-center gap-3">
-            <Produce id="p1" size={38} />
-            <span className="flex-1" style={{ color: c.ink }}>{tom.name[lang]}</span>
-            <span className="text-right">
-              <span className="block" style={{ color: c.muted, fontSize: 12 }}>{t("mandi_says")}</span>
-              <span className="block" style={{ ...big, ...num, fontSize: 19, color: c.muted }}>{inr(tom.mandi)}</span>
-            </span>
-            <span className="text-right">
-              <span className="block" style={{ color: c.muted, fontSize: 12 }}>{t("you_get_here")}</span>
-              <span className="block" style={{ ...big, ...num, fontSize: 19, color: c.green }}>{inr(tom.farmer)}</span>
-            </span>
+      {/* Mandi vs Direct Comparison */}
+      <Sheet c={c} className="p-3.5">
+        <div className="text-xs font-semibold uppercase mb-2" style={{ color: c.muted, letterSpacing: "0.08em" }}>{t("todays_mandi")}</div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Produce id="p1" size={32} />
+            <div>
+              <div className="text-xs font-bold" style={{ color: c.ink }}>{tom.name[lang]}</div>
+              <div className="text-xs" style={{ color: c.muted }}>Mandi modal: {inr(tom.mandi)}</div>
+            </div>
           </div>
-          <Says c={c}>
-            {lang === 0
-              ? `The mandi calls ${inr(tom.mandi)}, but after commission and the trip you keep about ${inr1(tom.mandi * MANDI_NET_F)}. Here the whole ${inr(tom.farmer)} is yours.`
-              : `मंडी में बोली ${inr(tom.mandi)} लगती है, पर आढ़त और फेरे के बाद हाथ आते हैं करीब ${inr1(tom.mandi * MANDI_NET_F)}। यहाँ पूरा ${inr(tom.farmer)} आपका है।`}
-          </Says>
-        </Sheet>
-      </div>
-
-      <div className="mt-5">
-        <SectionHead c={c} title={t("nav_f_produce")} action={t("see_all")} onAction={() => go("produce")} />
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2">
-          {listings.slice(0, 6).map((l, i) => {
-            const p = PRODUCTS.find(x => x.id === l.pid);
-            return (
-              <div key={i} className="shrink-0" style={{ width: 120 }}>
-                <Sheet c={c} className="p-3 text-center">
-                  <span className="mx-auto grid place-items-center rounded-xl" style={{ background: c.peach, height: 60 }}>
-                    <Produce id={p.id} size={42} />
-                  </span>
-                  <div className="mt-1.5 truncate text-sm" style={{ color: c.ink }}>{p.name[lang]}</div>
-                  <div style={{ ...big, ...num, fontSize: 17, color: c.green }}>{inr(l.rate)}</div>
-                </Sheet>
-              </div>
-            );
-          })}
+          <div className="text-right">
+            <div className="text-xs" style={{ color: c.muted }}>{t("you_get_here")}</div>
+            <div className="text-sm font-bold" style={{ ...num, color: c.green }}>{inr(tom.farmer)}/kg</div>
+          </div>
         </div>
-      </div>
+      </Sheet>
     </div>
   );
 }
 
-function NumPad({ c, onKey }) {
-  return (
-    <div className="mt-4 grid grid-cols-3 gap-2">
-      {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "back"].map(k => (
-        <button key={k} onClick={() => onKey(k)} className="grid place-items-center rounded-xl font-bold"
-          style={{ height: 54, fontSize: 22, ...num, border: `1px solid ${c.line}`, background: c.surface, color: c.ink, boxShadow: lift(c) }}>
-          {k === "back" ? <Delete size={20} /> : k}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function FarmerAdd({ c, t, lang, close, save }) {
+/* Modal-driven Complex Input Flow (Rule 5: Forms in Modals) */
+function AddCropModal({ c, t, lang, close, save }) {
   const [step, setStep] = useState(0), [pid, setPid] = useState(null);
-  const [qty, setQty] = useState(""), [rate, setRate] = useState(""), [field, setField] = useState("qty");
-  const [done, setDone] = useState(false);
+  const [qty, setQty] = useState(""), [rate, setRate] = useState("");
   const p = pid ? PRODUCTS.find(x => x.id === pid) : null;
-  const key = k => {
-    const cur = field === "qty" ? qty : rate;
-    const nxt = k === "back" ? cur.slice(0, -1) : (cur + k).replace(/^0+/, "").slice(0, 5);
-    (field === "qty" ? setQty : setRate)(nxt);
-  };
   const uniq = [];
   PRODUCTS.forEach(x => { if (!uniq.find(u => u.name[0] === x.name[0])) uniq.push(x); });
 
-  if (done) return (
-    <div className="px-5 py-10 text-center" style={{ fontSize: 16 }}>
-      <div className="mx-auto grid place-items-center rounded-md" style={{ width: 86, height: 86, background: c.greenSoft }}>
-        <Check size={44} style={{ color: c.green }} />
-      </div>
-      <h2 className="mt-4" style={{ ...big, fontSize: 24, color: c.ink }}>{t("live_now")}</h2>
-      <div className="mt-5">
-        <Sheet c={c} className="flex items-center gap-3 p-4 text-left">
-          <span className="grid place-items-center rounded-xl" style={{ background: c.peach, width: 56, height: 56 }}>
-            <Produce id={p.id} size={40} />
-          </span>
-          <div>
-            <div style={{ ...big, fontSize: 18, color: c.ink }}>{p.name[lang]}</div>
-            <div style={{ ...num, color: c.muted, fontSize: 14 }}>{qty} {p.unit[lang]}</div>
-          </div>
-          <div className="ml-auto text-right">
-            <div style={{ ...big, ...num, fontSize: 22, color: c.green }}>{inr(+rate)}</div>
-            <div style={{ color: c.muted, fontSize: 12 }}>/{p.unit[lang]}</div>
-          </div>
-        </Sheet>
-      </div>
-      <button onClick={() => { setDone(false); setStep(0); setPid(null); setQty(""); setRate(""); }}
-        className="mt-6 w-full rounded-md" style={{ background: c.green, color: "#fff", height: 54, fontSize: 17, fontWeight: 700, boxShadow: `0 4px 0 0 ${c.greenDeep}` }}>
-        {t("add_another")}
-      </button>
-      <button onClick={close} className="mt-3 w-full rounded-md"
-        style={{ background: "transparent", border: `1px solid ${c.line}`, color: c.ink, height: 52, fontSize: 16, fontWeight: 700 }}>
-        {t("nav_f_produce")}
-      </button>
-    </div>
-  );
-
   return (
-    <div className="px-4 pb-8" style={{ fontSize: 16 }}>
-      <div className="mb-4 flex items-center gap-2">
-        {[0, 1, 2].map(i => (
-          <span key={i} className="h-1.5 flex-1 rounded-md" style={{ background: i <= step ? c.green : c.line }} />
-        ))}
-        <span className="text-xs" style={{ ...num, color: c.muted }}>{step + 1} {t("step_of")} 3</span>
-      </div>
-      <h2 style={{ ...big, fontSize: 24, color: c.ink }}>{t(["step1", "step2", "step3"][step])}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }}>
+      <div className="w-full max-w-md rounded-2xl p-5 shadow-2xl"
+        style={{ background: c.surface, border: `1px solid ${c.line}`, color: c.ink, maxHeight: "90vh", overflowY: "auto" }}>
+        
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: c.line }}>
+          <div className="flex items-center gap-2">
+            <Plus size={18} style={{ color: c.green }} />
+            <h2 style={{ fontFamily: FD, fontWeight: 700, fontSize: 18 }}>{t("add_crop")}</h2>
+          </div>
+          <button onClick={close} className="p-1 rounded-md" style={{ color: c.muted }}><X size={16} /></button>
+        </div>
 
-      {step === 0 && (
-        <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-          {uniq.map(x => (
-            <button key={x.id} onClick={() => { setPid(x.id); setRate(String(x.farmer)); setStep(1); }}
-              className="grid place-items-center py-3"
-              style={{ background: c.surface, borderRadius: RAD.card, border: `1px solid ${c.line}`, boxShadow: lift(c), minHeight: 100 }}>
-              <Produce id={x.id} size={42} />
-              <span className="mt-1 text-center text-xs font-semibold" style={{ color: c.ink }}>{x.name[lang]}</span>
-            </button>
+        {/* Step Progress */}
+        <div className="mt-3 flex items-center gap-1.5">
+          {[0, 1, 2].map(i => (
+            <span key={i} className="h-1 flex-1 rounded-full" style={{ background: i <= step ? c.green : c.line }} />
           ))}
         </div>
-      )}
 
-      {step === 1 && (
-        <div className="mt-4">
-          <div className="grid grid-cols-2 gap-3">
-            {[["qty", t("how_much"), qty, p.unit[lang]], ["rate", `${t("your_rate")} ${p.unit[lang]}`, rate, "₹"]].map(([f, label, val]) => (
-              <button key={f} onClick={() => setField(f)} className="p-3 text-left"
-                style={{
-                  background: c.surface, borderRadius: RAD.card, boxShadow: lift(c),
-                  border: `${field === f ? 2 : 1}px solid ${field === f ? c.green : c.line}`,
-                }}>
-                <div style={{ color: c.muted, fontSize: 13 }}>{label}</div>
-                <div className="mt-1" style={{ ...big, ...num, fontSize: 28, color: val ? c.ink : c.line }}>
-                  {f === "rate" && val ? "₹" : ""}{val || "0"}
+        {step === 0 && (
+          <div className="mt-4">
+            <div className="text-xs font-semibold mb-3" style={{ color: c.muted }}>{t("step1")}</div>
+            <div className="grid grid-cols-3 gap-2">
+              {uniq.map(x => (
+                <button key={x.id} onClick={() => { setPid(x.id); setRate(String(x.farmer)); setStep(1); }}
+                  className="p-2.5 rounded-xl text-center border transition-all"
+                  style={{ background: c.raise, borderColor: c.line }}>
+                  <div className="mx-auto mb-1.5 flex justify-center"><Produce id={x.id} size={42} bg="beige" className="rounded-lg" /></div>
+                  <div className="text-xs font-semibold truncate" style={{ color: c.ink }}>{x.name[lang]}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Produce id={p.id} size={28} />
+              <span className="font-bold text-sm">{p.name[lang]}</span>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1" style={{ color: c.muted }}>
+                {t("how_much")} ({p.unit[lang]})
+              </label>
+              <input type="number" value={qty} onChange={e => setQty(e.target.value)} placeholder="e.g. 100"
+                className="w-full px-3 py-2 rounded-lg text-sm font-semibold outline-none"
+                style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1" style={{ color: c.muted }}>
+                {t("your_rate")} ₹/{p.unit[lang]}
+              </label>
+              <input type="number" value={rate} onChange={e => setRate(e.target.value)} placeholder="e.g. 24"
+                className="w-full px-3 py-2 rounded-lg text-sm font-semibold outline-none"
+                style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }} />
+            </div>
+
+            <div className="p-3 rounded-lg text-xs" style={{ background: c.raise, color: c.muted }}>
+              {t("mandi_says")} <b style={{ ...num, color: c.ink }}>{inr(p.mandi)}</b> · Net in hand: <b style={{ ...num, color: c.green }}>{inr1(p.mandi * MANDI_NET_F)}</b>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => setStep(0)} className="flex-1 rounded-lg py-2.5 text-xs font-semibold"
+                style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }}>{t("back_b")}</button>
+              <button onClick={() => qty && rate && setStep(2)} className="flex-1 rounded-lg py-2.5 text-xs font-bold"
+                style={{ background: c.green, color: "#fff" }}>{t("next")}</button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="mt-4 space-y-3">
+            <div className="p-3.5 rounded-xl" style={{ background: c.raise }}>
+              <div className="flex items-center gap-2">
+                <Produce id={p.id} size={32} bg="beige" />
+                <div>
+                  <div className="text-sm font-bold">{p.name[lang]}</div>
+                  <div className="text-xs" style={{ color: c.muted }}>{qty} {p.unit[lang]} @ ₹{rate}/{p.unit[lang]}</div>
                 </div>
-              </button>
-            ))}
-          </div>
-          <div className="mt-3 flex items-center gap-2 rounded-xl p-3" style={{ background: c.goldSoft }}>
-            <Scale size={17} style={{ color: c.gold }} />
-            <span style={{ color: c.gold, fontSize: 14 }}>
-              {t("mandi_says")} <b style={num}>{inr(p.mandi)}</b> · {lang === 0 ? "in hand" : "हाथ आता"} <b style={num}>{inr1(p.mandi * MANDI_NET_F)}</b>
-            </span>
-          </div>
-          <NumPad c={c} onKey={key} />
-          <button onClick={() => qty && rate && setStep(2)} className="mt-4 w-full rounded-md"
-            style={{ background: c.green, color: "#fff", height: 54, fontSize: 17, fontWeight: 700, boxShadow: `0 4px 0 0 ${c.greenDeep}` }}>
-            {t("next")}
-          </button>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="mt-4">
-          <Sheet c={c} className="p-4">
-            <div className="flex items-center gap-3">
-              <span className="grid place-items-center rounded-xl" style={{ background: c.peach, width: 60, height: 60 }}>
-                <Produce id={p.id} size={44} />
-              </span>
-              <div>
-                <div style={{ ...big, fontSize: 20, color: c.ink }}>{p.name[lang]}</div>
-                <div style={{ ...num, color: c.muted, fontSize: 14 }}>{qty} {p.unit[lang]} · {inr(+rate)}/{p.unit[lang]}</div>
+              </div>
+              <div className="mt-3 pt-2 border-t flex justify-between items-center" style={{ borderColor: c.line }}>
+                <span className="text-xs" style={{ color: c.muted }}>{t("will_earn")}</span>
+                <span className="text-base font-bold" style={{ ...num, color: c.green }}>{inr((+qty) * (+rate))}</span>
               </div>
             </div>
-            <div className="mt-4 border-t pt-3" style={{ borderColor: c.line }}>
-              <div style={{ color: c.muted, fontSize: 14 }}>{t("will_earn")}</div>
-              <div style={{ ...big, ...num, fontSize: 36, color: c.green }}>{inr((+qty) * (+rate))}</div>
+
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => setStep(1)} className="flex-1 rounded-lg py-2.5 text-xs font-semibold"
+                style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }}>{t("back_b")}</button>
+              <button onClick={() => { save({ pid, rate: +rate, stock: +qty, live: true }); close(); }}
+                className="flex-1 rounded-lg py-2.5 text-xs font-bold"
+                style={{ background: c.green, color: "#fff" }}>{t("confirm")}</button>
             </div>
-          </Sheet>
-          <button onClick={() => { save({ pid, rate: +rate, stock: +qty, live: true }); setDone(true); }}
-            className="mt-5 w-full rounded-md"
-            style={{ background: c.green, color: "#fff", height: 56, fontSize: 17, fontWeight: 700, boxShadow: `0 4px 0 0 ${c.greenDeep}` }}>
-            {t("confirm")}
-          </button>
-          <button onClick={() => setStep(1)} className="mt-3 w-full rounded-md"
-            style={{ border: `1px solid ${c.line}`, color: c.ink, height: 50, fontSize: 16, fontWeight: 700 }}>
-            {t("back_b")}
-          </button>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function FarmerProduce({ c, t, lang, listings, toggle, startAdd }) {
   return (
-    <div className="pb-24" style={{ fontSize: 16 }}>
-      <div className="space-y-3 px-4">
-        {listings.map((l, i) => {
-          const p = PRODUCTS.find(x => x.id === l.pid);
-          return (
-            <Sheet c={c} key={i} className="flex items-center gap-3 p-3">
-              <span className="grid shrink-0 place-items-center rounded-xl" style={{ background: c.peach, width: 58, height: 58 }}>
-                <Produce id={p.id} size={42} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div style={{ ...big, fontSize: 17, color: c.ink }}>{p.name[lang]}</div>
-                <div style={{ ...num, color: c.muted, fontSize: 14 }}>{l.stock} {p.unit[lang]} {t("left_word")}</div>
-                <div className="mt-1"><Pill c={c} tone={l.live ? "green" : "flat"}>{l.live ? t("on_sale") : t("paused")}</Pill></div>
-              </div>
-              <div className="text-right">
-                <div style={{ ...big, ...num, fontSize: 21, color: c.green }}>{inr(l.rate)}</div>
-                <button onClick={() => toggle(i)} className="mt-1 grid place-items-center rounded-md"
-                  style={{ width: 40, height: 40, border: `1px solid ${c.line}`, color: c.ink, marginLeft: "auto" }}>
-                  {l.live ? <Pause size={16} /> : <Play size={16} />}
-                </button>
-              </div>
-            </Sheet>
-          );
-        })}
-      </div>
-      <div className="fixed bottom-0 left-1/2 z-40 w-full px-4 pb-20" style={{ maxWidth: 430, transform: "translateX(-50%)" }}>
-        <button onClick={startAdd} className="flex w-full items-center justify-center gap-2 rounded-md"
-          style={{ background: c.green, color: "#fff", height: 54, fontSize: 17, fontWeight: 700, boxShadow: `0 6px 18px -6px ${c.cast}, 0 4px 0 0 ${c.greenDeep}` }}>
-          <Plus size={21} /> {t("add_crop")}
+    <div className="pb-24 px-4 space-y-2.5">
+      {listings.map((l, i) => {
+        const p = PRODUCTS.find(x => x.id === l.pid);
+        return (
+          <Sheet c={c} key={i} className="flex items-center gap-3 p-3">
+            <Produce id={p.id} size={36} />
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold" style={{ color: c.ink }}>{p.name[lang]}</div>
+              <div className="text-xs" style={{ ...num, color: c.muted }}>{l.stock} {p.unit[lang]} {t("left_word")}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-bold" style={{ ...num, color: c.green }}>{inr(l.rate)}</div>
+              <button onClick={() => toggle(i)} className="mt-0.5 rounded px-2 py-0.5 text-xs"
+                style={{ background: c.raise, border: `1px solid ${c.line}`, color: c.ink }}>
+                {l.live ? <Pause size={12} className="inline mr-1" /> : <Play size={12} className="inline mr-1" />}
+                {l.live ? t("on_sale") : t("paused")}
+              </button>
+            </div>
+          </Sheet>
+        );
+      })}
+      <div className="fixed bottom-0 left-1/2 z-40 w-full px-4 pb-16" style={{ maxWidth: 430, transform: "translateX(-50%)" }}>
+        <button onClick={startAdd} className="flex w-full items-center justify-center gap-2 rounded-xl font-semibold"
+          style={{ background: c.green, color: "#fff", height: 48, fontSize: 14, boxShadow: `0 4px 14px -4px ${c.cast}` }}>
+          <Plus size={16} /> {t("add_crop")}
         </button>
       </div>
     </div>
@@ -2158,64 +2490,26 @@ function FarmerProduce({ c, t, lang, listings, toggle, startAdd }) {
 
 function FarmerOrders({ c, t, lang, orders, advance, rate }) {
   return (
-    <div className="space-y-3 px-4 pb-4" style={{ fontSize: 16 }}>
+    <div className="space-y-3 px-4 pb-4">
       {orders.map(o => {
         const paid = o.step >= 5;
         return (
-          <Sheet c={c} key={o.id} className="p-4">
-            <div className="flex items-start gap-3">
-              <LockBox c={c} open={paid} size={70} />
-              <div className="min-w-0 flex-1">
-                <div style={{ ...big, fontSize: 17, color: c.ink }}>{o.buyer[lang]}</div>
-                <div style={{ color: c.muted, fontSize: 13 }}>{o.date}</div>
-                <div className="mt-1"><Pill c={c} tone={paid ? "green" : "gold"}>{t(STEPS[o.step])}</Pill></div>
-              </div>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {o.items.map(it => {
-                const p = PRODUCTS.find(x => x.id === it.id);
-                return (
-                  <span key={it.id} className="flex items-center gap-1 rounded-md px-2 py-1 text-sm"
-                    style={{ background: c.raise, color: c.ink }}>
-                    <Produce id={p.id} size={20} />{p.name[lang]} <b style={num}>×{it.qty}</b>
-                  </span>
-                );
-              })}
-            </div>
-            <div className="mt-3 flex items-end justify-between border-t pt-3" style={{ borderColor: c.line }}>
+          <Sheet c={c} key={o.id} className="p-3.5">
+            <div className="flex items-start justify-between">
               <div>
-                <div style={{ color: c.muted, fontSize: 13 }}>{paid ? t("released") : t("held")}</div>
-                <div style={{ ...big, ...num, fontSize: 26, color: paid ? c.green : c.gold }}>{inr(o.farmerPayout)}</div>
+                <div className="text-xs font-bold" style={{ color: c.ink }}>{o.buyer[lang]}</div>
+                <div className="text-xs" style={{ color: c.muted }}>{o.date}</div>
               </div>
-              <div className="text-right" style={{ color: c.muted, fontSize: 13 }}>
-                {t("transport")} {inr(o.transport)}<br />
-                <span style={{ color: c.ink }}>{lang === 0 ? "your half" : "आपका आधा"} {inr(o.transport / 2)}</span>
-              </div>
+              <Pill c={c} tone={paid ? "green" : "gold"}>{t(STEPS[o.step])}</Pill>
             </div>
-
-            {o.step >= 4 && o.loss > 0 && (
-              <div className="mt-3 rounded-xl p-3" style={{ background: c.greenSoft }}>
-                <div className="flex items-center gap-1.5">
-                  <Shield size={15} style={{ color: c.green }} />
-                  <span className="text-sm font-bold" style={{ color: c.green }}>{t("transit_loss")}</span>
-                </div>
-                <div className="mt-1.5 flex gap-4 text-sm" style={{ color: c.green }}>
-                  <span>{t("picked_qty")} <b style={num}>{o.pickup}kg</b></span>
-                  <span>{t("del_qty")} <b style={num}>{o.pickup - o.loss}kg</b></span>
-                </div>
-                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: c.green }}>{o.loss} kg {t("loss_covered")}</p>
+            <div className="mt-3 flex items-center justify-between pt-2 border-t" style={{ borderColor: c.line }}>
+              <div>
+                <div className="text-xs" style={{ color: c.muted }}>{paid ? t("released") : t("held")}</div>
+                <div className="text-sm font-bold" style={{ ...num, color: paid ? c.green : c.gold }}>{inr(o.farmerPayout)}</div>
               </div>
-            )}
-
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {o.step >= 4 && (o.ratedBuyer ? <Pill c={c} tone="green">{t("rated")}</Pill>
-                : <div className="flex items-center gap-1">
-                    <span className="text-sm" style={{ color: c.muted }}>{t("rate_buyer")}</span>
-                    {[1, 2, 3, 4, 5].map(n => <button key={n} onClick={() => rate(o.id)}><Star size={18} style={{ color: c.goldBright }} /></button>)}
-                  </div>)}
               {o.step < 5 && (
-                <button onClick={() => advance(o.id)} className="ml-auto rounded-md px-5"
-                  style={{ background: c.green, color: "#fff", height: 46, fontSize: 15, fontWeight: 700, boxShadow: `0 3px 0 0 ${c.greenDeep}` }}>
+                <button onClick={() => advance(o.id)} className="rounded-lg px-3 py-1.5 text-xs font-bold"
+                  style={{ background: c.green, color: "#fff" }}>
                   {t(STEPS[o.step + 1])}
                 </button>
               )}
@@ -2232,225 +2526,87 @@ function FarmerEarnings({ c, t, lang }) {
   const m = per === "day" ? 1 / 365 : per === "week" ? 7 / 365 : per === "month" ? 1 / 12 : 1;
   const rev = MONTHLY.reduce((s, x) => s + x.rev, 0) * m, exp = MONTHLY.reduce((s, x) => s + x.exp, 0) * m;
   const tx = { fill: c.muted, fontSize: 10 };
-  const best = CROP_PROFIT[0];
-  const tip = { background: c.surface, border: `1px solid ${c.line}`, borderRadius: 10, color: c.ink, fontSize: 12 };
+  const tip = { background: c.surface, border: `1px solid ${c.line}`, borderRadius: 8, color: c.ink, fontSize: 12 };
 
   return (
-    <div className="pb-4 pt-1" style={{ fontSize: 16 }}>
-      <div className="mb-3 flex gap-2 overflow-x-auto px-4">
+    <div className="pb-4 px-4 space-y-3">
+      <div className="flex gap-1.5">
         {["day", "week", "month", "year"].map(k => (
-          <button key={k} onClick={() => setPer(k)} className="shrink-0 rounded-md px-4 text-sm font-bold"
+          <button key={k} onClick={() => setPer(k)} className="flex-1 rounded-lg py-1.5 text-xs font-semibold"
             style={{
-              height: 40, background: per === k ? c.green : c.surface, color: per === k ? "#fff" : c.muted,
+              background: per === k ? c.green : c.surface, color: per === k ? "#fff" : c.muted,
               border: `1px solid ${per === k ? c.green : c.line}`,
             }}>{t(k)}</button>
         ))}
       </div>
 
-      <div className="px-4">
-        <Sheet c={c} className="p-4">
-          <div className="grid grid-cols-3 gap-3">
-            {[[t("sold_word"), rev, c.ink], [t("spent_word"), exp, c.red], [t("kept_word"), rev - exp, c.green]].map(([l, v, col], i) => (
-              <div key={i}>
-                <Stencil c={c}>{l}</Stencil>
-                <div style={{ ...big, ...num, fontSize: i === 2 ? 24 : 20, color: col }}>{inr(v)}</div>
-              </div>
-            ))}
-          </div>
-          <Says c={c}>
-            {lang === 0 ? `Out of every ₹100 you sold, ₹${Math.round(((rev - exp) / rev) * 100)} stayed with you.`
-              : `आपने जो ₹100 बेचा, उसमें से ₹${Math.round(((rev - exp) / rev) * 100)} आपके पास रहे।`}
-          </Says>
-        </Sheet>
-      </div>
-
-      <div className="mt-3 px-4">
-        <Sheet c={c} className="flex items-center gap-3 p-4">
-          <Scale size={24} style={{ color: c.green }} />
+      {/* Consolidated Financial Summary Card (Rule 3) */}
+      <Sheet c={c} className="p-4">
+        <div className="text-xs font-semibold uppercase mb-2" style={{ color: c.muted, letterSpacing: "0.08em" }}>
+          P&L Summary
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center py-1">
           <div>
-            <div style={{ color: c.muted, fontSize: 13 }}>{t("per_unit_got")}</div>
-            <div style={{ ...big, ...num, fontSize: 24, color: c.green }}>₹18.40</div>
+            <div className="text-xs" style={{ color: c.muted }}>{t("sold_word")}</div>
+            <div className="font-bold text-sm" style={{ ...num, color: c.ink }}>{inr(rev)}</div>
           </div>
-          <div className="ml-auto text-right">
-            <div style={{ color: c.muted, fontSize: 13 }}>{t("mandi_would")}</div>
-            <div style={{ ...big, ...num, fontSize: 20, color: c.muted }}>₹15.70</div>
+          <div>
+            <div className="text-xs" style={{ color: c.muted }}>{t("spent_word")}</div>
+            <div className="font-bold text-sm" style={{ ...num, color: c.red }}>{inr(exp)}</div>
           </div>
-        </Sheet>
-      </div>
+          <div>
+            <div className="text-xs" style={{ color: c.muted }}>{t("kept_word")}</div>
+            <div className="font-bold text-sm" style={{ ...num, color: c.green }}>{inr(rev - exp)}</div>
+          </div>
+        </div>
+        <div className="mt-3 pt-2 border-t flex justify-between text-xs" style={{ borderColor: c.line, color: c.muted }}>
+          <span>Net Profit Retention Margin</span>
+          <span className="font-bold text-green-700" style={{ color: c.green }}>{Math.round(((rev - exp) / rev) * 100)}%</span>
+        </div>
+      </Sheet>
 
-      <div className="mt-4 px-4">
-        <Sheet c={c} className="p-4">
-          <Stencil c={c}>{t("chart_month_h")}</Stencil>
-          <div className="mt-2" style={{ height: 180 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MONTHLY.map(x => ({ name: x.m[lang], ...x }))} margin={{ top: 4, right: 2, left: -22, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={c.green} stopOpacity={.4} /><stop offset="100%" stopColor={c.green} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke={c.line} vertical={false} />
-                <XAxis dataKey="name" tick={tx} axisLine={false} tickLine={false} interval={1} />
-                <YAxis tick={tx} axisLine={false} tickLine={false} tickFormatter={v => v / 1000 + "k"} />
-                <Tooltip formatter={v => inr(v)} contentStyle={tip} />
-                <Area type="monotone" dataKey="rev" stroke={c.green} strokeWidth={2} fill="url(#gR)" name={t("sold_word")} />
-                <Line type="monotone" dataKey="profit" stroke={c.goldBright} strokeWidth={2} dot={false} name={t("kept_word")} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <Says c={c}>
-            {lang === 0 ? "March was your best month. Winter vegetables sell for more than summer ones."
-              : "मार्च सबसे अच्छा महीना रहा। जाड़े की सब्ज़ी गर्मी वाली से ज़्यादा भाव पाती है।"}
-          </Says>
-        </Sheet>
-      </div>
-
-      <div className="mt-3 px-4">
-        <Sheet c={c} className="p-4">
-          <Stencil c={c}>{t("chart_crop_h")}</Stencil>
-          <div className="mt-2" style={{ height: 170 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={CROP_PROFIT.map(x => ({ name: x.c[lang], p: x.p }))} layout="vertical" margin={{ top: 0, right: 8, left: 2, bottom: 0 }}>
-                <CartesianGrid stroke={c.line} horizontal={false} />
-                <XAxis type="number" tick={tx} axisLine={false} tickLine={false} tickFormatter={v => v / 1000 + "k"} />
-                <YAxis type="category" dataKey="name" tick={tx} axisLine={false} tickLine={false} width={62} />
-                <Tooltip cursor={{ fill: c.greenSoft }} formatter={v => inr(v)} contentStyle={tip} />
-                <Bar dataKey="p" radius={[0, 4, 4, 0]}>
-                  {CROP_PROFIT.map((x, i) => <Cell key={i} fill={c.green} opacity={1 - i * .14} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <Says c={c}>
-            {lang === 0 ? `${best.c[0]} paid the most this year, ${inr(best.p)}. Consider more land next season.`
-              : `इस साल सबसे ज़्यादा ${best.c[1]} ने दिया, ${inr(best.p)}। अगली बार थोड़ी और ज़मीन दे सकते हैं।`}
-          </Says>
-        </Sheet>
-      </div>
-
-      <div className="mt-3 px-4">
-        <Sheet c={c} className="p-4">
-          <div className="flex items-center gap-2">
-            <Sparkles size={15} style={{ color: c.gold }} />
-            <Stencil c={c} col={c.gold}>{t("demand_h")}</Stencil>
-          </div>
-          <div className="mt-2" style={{ height: 165 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={FORECAST.map(x => ({ name: x.w[lang], ...x }))} margin={{ top: 4, right: 4, left: -26, bottom: 0 }}>
-                <CartesianGrid stroke={c.line} vertical={false} />
-                <XAxis dataKey="name" tick={tx} axisLine={false} tickLine={false} />
-                <YAxis tick={tx} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tip} />
-                <Line type="monotone" dataKey="tomato" stroke={c.red} strokeWidth={2} dot={false} name={lang === 0 ? "Tomato" : "टमाटर"} />
-                <Line type="monotone" dataKey="onion" stroke={c.goldBright} strokeWidth={2} dot={false} name={lang === 0 ? "Onion" : "प्याज़"} />
-                <Line type="monotone" dataKey="leafy" stroke={c.green} strokeWidth={2} dot={false} name={lang === 0 ? "Leafy" : "पत्तेदार"} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <Says c={c}>
-            {lang === 0 ? "Tomato buyers rise sharply in week 4. Holding about 120 kg back is worth roughly ₹1,900 more."
-              : "चौथे हफ़्ते टमाटर के खरीदार तेज़ी से बढ़ेंगे। करीब 120 किलो रोकना लगभग ₹1,900 ज़्यादा देगा।"}
-          </Says>
-        </Sheet>
-      </div>
-
-      <div className="mt-3 px-4">
-        <Sheet c={c} className="p-4">
-          <div className="flex items-center gap-2">
-            <Route size={15} style={{ color: c.green }} />
-            <Stencil c={c}>{t("route_h")}</Stencil>
-          </div>
-          <svg viewBox="0 0 100 100" className="mt-3 w-full" style={{ height: 120 }} preserveAspectRatio="none">
-            <path d={ROUTE_STOPS.map((s, i) => `${i ? "L" : "M"}${s.x} ${s.y}`).join(" ")} stroke={c.green}
-              strokeWidth="1.4" fill="none" strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
-            {ROUTE_STOPS.map((s, i) => (
-              <g key={i}>
-                <circle cx={s.x} cy={s.y} r="4" fill={i === 0 ? c.goldBright : c.green} />
-                <text x={s.x} y={s.y + 1.6} textAnchor="middle" fontSize="4.4" fontWeight="700" fill="#fff">{i === 0 ? "F" : i}</text>
-              </g>
-            ))}
-          </svg>
-          <div className="mt-2 space-y-1.5">
-            {ROUTE_STOPS.map((s, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm">
-                <span style={{ ...num, color: c.muted, width: 42 }}>{s.t}</span>
-                <span className="flex-1 truncate" style={{ color: c.ink }}>{s.n[lang]}</span>
-                <span style={{ ...num, color: c.muted }}>{s.km ? s.km + "km" : "start"}</span>
-              </div>
-            ))}
-          </div>
-          <Says c={c}>
-            {lang === 0 ? "Four drops in one trip: 35 km instead of 58, about ₹137 saved on diesel."
-              : "चार जगह एक ही फेरे में: 58 की जगह 35 किमी, डीज़ल में करीब ₹137 की बचत।"}
-          </Says>
-        </Sheet>
-      </div>
+      {/* Monthly Chart */}
+      <Sheet c={c} className="p-4">
+        <div className="text-xs font-semibold mb-2" style={{ color: c.muted }}>{t("chart_month_h")}</div>
+        <div style={{ height: 160 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={MONTHLY.map(x => ({ name: x.m[lang], ...x }))} margin={{ top: 4, right: 2, left: -22, bottom: 0 }}>
+              <CartesianGrid stroke={c.line} vertical={false} />
+              <XAxis dataKey="name" tick={tx} axisLine={false} tickLine={false} />
+              <YAxis tick={tx} axisLine={false} tickLine={false} tickFormatter={v => v / 1000 + "k"} />
+              <Tooltip formatter={v => inr(v)} contentStyle={tip} />
+              <Area type="monotone" dataKey="rev" stroke={c.green} fill={c.greenSoft} name={t("sold_word")} />
+              <Line type="monotone" dataKey="profit" stroke={c.goldBright} strokeWidth={2} dot={false} name={t("kept_word")} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </Sheet>
     </div>
   );
 }
 
 /* ── legal pages ───────────────────────────────────────────── */
-/* Written for an Indian marketplace: the platform is an intermediary,
-   not the seller. Grievance timelines follow the Consumer Protection
-   (E-Commerce) Rules 2020; data handling follows the DPDP Act 2023. */
 const PRIVACY = [
-  { h: ["What we collect", "हम क्या लेते हैं"],
-    p: ["Your name, mobile number, delivery address and pincode. Your order history. For farmers, the bank or UPI account that receives payouts. Nothing else.",
-        "आपका नाम, मोबाइल नंबर, पता और पिनकोड। आपके ऑर्डर का ब्योरा। किसानों का वह बैंक या UPI खाता जिसमें भुगतान जाता है। इसके अलावा कुछ नहीं।"] },
-  { h: ["Why we collect it", "क्यों लेते हैं"],
-    p: ["To show you farms near your pincode, to deliver your order, and to pay the farmer. We do not build advertising profiles and we do not sell data to anyone.",
-        "आपके पिनकोड के पास के खेत दिखाने, ऑर्डर पहुँचाने और किसान को भुगतान करने के लिए। हम विज्ञापन प्रोफ़ाइल नहीं बनाते और किसी को डेटा नहीं बेचते।"] },
-  { h: ["Who else sees it", "और कौन देखता है"],
-    p: ["The farmer you order from sees your name and delivery address. The delivery partner sees the address. The payment processor sees the transaction. That is the full list.",
-        "जिस किसान से आप लेते हैं वह आपका नाम और पता देखता है। डिलीवरी वाला पता देखता है। भुगतान प्रोसेसर लेन-देन देखता है। सूची इतनी ही है।"] },
-  { h: ["Your farming record", "आपका काम का खाता"],
-    p: ["A farmer's sales record belongs to that farmer. You can export it at any time and you can ask us to delete it. We will not share it with a lender or an agency without your written consent.",
-        "किसान का बिक्री रिकॉर्ड उसी किसान का है। आप जब चाहें उसे निर्यात कर सकते हैं और मिटाने को कह सकते हैं। आपकी लिखित सहमति के बिना हम इसे किसी ऋणदाता या संस्था को नहीं देंगे।"] },
-  { h: ["How long we keep it", "कब तक रखते हैं"],
-    p: ["Order and payment records for eight years, as tax law requires. Everything else is deleted within 30 days of you closing your account.",
-        "ऑर्डर और भुगतान का रिकॉर्ड आठ साल, जैसा कर कानून कहता है। बाकी सब खाता बंद करने के 30 दिन के भीतर मिटा दिया जाता है।"] },
-  { h: ["Your rights", "आपके अधिकार"],
-    p: ["Under the Digital Personal Data Protection Act 2023 you may ask for a copy of your data, correct it, or withdraw consent. Write to the grievance officer below and we will act within 30 days.",
-        "डिजिटल व्यक्तिगत डेटा संरक्षण अधिनियम 2023 के तहत आप अपने डेटा की प्रति माँग सकते हैं, उसे सुधार सकते हैं, या सहमति वापस ले सकते हैं। नीचे दिए शिकायत अधिकारी को लिखें, हम 30 दिन में कार्रवाई करेंगे।"] },
+  { h: ["Data Processing & Retention", "डेटा प्रसंस्करण"],
+    p: ["We process only necessary identifiers under the DPDP Act 2023 for order logistics and direct farm payouts. No advertising profiles or third-party brokers."] },
+  { h: ["Farmer Record Sovereignty", "किसान रिकॉर्ड संप्रभुता"],
+    p: ["A farmer's sales record belongs exclusively to them. Exportable anytime without platform lock-in."] },
 ];
 
 const TERMS = [
-  { h: ["What Kisan Setu is", "किसान सेतु क्या है"],
-    p: ["A marketplace. The farmer is the seller and the seller of record. We do not own the produce, do not set the price, and are an intermediary under the Consumer Protection (E-Commerce) Rules 2020.",
-        "एक बाज़ार। किसान ही विक्रेता है। उपज हमारी नहीं है, दाम हम तय नहीं करते, और उपभोक्ता संरक्षण (ई-कॉमर्स) नियम 2020 के तहत हम बिचौलिया मंच हैं।"] },
-  { h: ["Who sets the price", "दाम कौन तय करता है"],
-    p: ["The farmer. We show the mandi reference rate as a hint and flag a listing far above the band for review, but the rate on the listing is the farmer's own.",
-        "किसान। हम मंडी की दर संकेत के रूप में दिखाते हैं और सीमा से बहुत ऊपर की सूची जाँच के लिए चिह्नित करते हैं, पर भाव किसान का अपना है।"] },
-  { h: ["Two kinds of buyer account", "खरीदार खाते दो तरह के"],
-    p: ["A household account may order up to 25 units per product per order. A shopkeeper account has a 50-unit minimum and a trade rate. Using a household account to buy for resale ends the account.",
-        "घरेलू खाता प्रति उत्पाद प्रति ऑर्डर 25 यूनिट तक ले सकता है। दुकानदार खाते की न्यूनतम सीमा 50 यूनिट और व्यापार दर है। दोबारा बेचने के लिए घरेलू खाते का उपयोग करने पर खाता बंद कर दिया जाएगा।"] },
-  { h: ["Transport", "ढुलाई"],
-    p: ["The transport cost for an order is split evenly between farmer and buyer. Both see the same figure before the order is confirmed.",
-        "ऑर्डर की ढुलाई किसान और खरीदार में आधी-आधी बँटती है। पुष्टि से पहले दोनों को एक ही आँकड़ा दिखता है।"] },
-  { h: ["Payment and escrow", "भुगतान और एस्क्रो"],
-    p: ["Your payment is held by Kisan Setu and released to the farmer after you confirm delivery. If you do not confirm within 48 hours of delivery, it is released automatically.",
-        "आपका भुगतान किसान सेतु के पास रहता है और डिलीवरी की पुष्टि पर किसान को जारी होता है। डिलीवरी के 48 घंटे में पुष्टि न होने पर वह अपने आप जारी हो जाता है।"] },
-  { h: ["Transit loss", "परिवहन हानि"],
-    p: ["Crates are weighed at pickup and at delivery. A verified shortfall is paid from the protection fund, which is funded by the platform fee. It is not deducted from the farmer and not added to your bill.",
-        "सामान उठाते और पहुँचाते समय तौला जाता है। सत्यापित कमी सुरक्षा कोष से भरी जाती है, जो प्लेटफ़ॉर्म शुल्क से चलता है। न किसान से कटती है, न आपके बिल में जुड़ती है।"] },
-  { h: ["Cancellation and refund", "रद्द और वापसी"],
-    p: ["Cancel free of charge until the crate is picked up. After pickup, perishable produce cannot be cancelled, but anything that arrives spoiled is refunded in full within five working days.",
-        "सामान उठने तक रद्द करना मुफ़्त है। उठने के बाद जल्दी खराब होने वाली उपज रद्द नहीं होती, पर खराब पहुँचने पर पाँच कार्य दिवसों में पूरा पैसा लौटाया जाता है।"] },
-  { h: ["Ratings", "रेटिंग"],
-    p: ["Only a buyer and a farmer who completed an order together may rate each other. We do not write, buy, edit or delete ratings, except to remove abuse.",
-        "केवल वही खरीदार और किसान एक-दूसरे को रेटिंग दे सकते हैं जिन्होंने साथ ऑर्डर पूरा किया हो। हम रेटिंग न लिखते हैं, न खरीदते हैं, न बदलते हैं, न हटाते हैं, सिवाय दुर्व्यवहार हटाने के।"] },
-  { h: ["Complaints", "शिकायत"],
-    p: ["Write to the grievance officer. We acknowledge within 48 hours and resolve within one month, as the Consumer Protection (E-Commerce) Rules 2020 require. Disputes fall under the courts at Ghaziabad, Uttar Pradesh.",
-        "शिकायत अधिकारी को लिखें। उपभोक्ता संरक्षण (ई-कॉमर्स) नियम 2020 के अनुसार हम 48 घंटे में पावती और एक माह में समाधान देते हैं। विवाद ग़ाज़ियाबाद, उत्तर प्रदेश के न्यायालयों के अधीन हैं।"] },
+  { h: ["Marketplace Intermediary", "बिचौलिया मंच नियम"],
+    p: ["Kisan Setu functions as an open marketplace intermediary under Consumer Protection Rules 2020. The farmer is the independent seller of record."] },
+  { h: ["Escrow Protection & Transit Fund", "एस्क्रो और परिवहन सुरक्षा"],
+    p: ["Buyer payments remain locked until verified delivery. Transit loss discrepancies are absorbed by the safety fund, leaving farmer payouts untouched."] },
 ];
 
 function Legal({ c, t, lang, tab, setTab }) {
   const doc = tab === "privacy" ? PRIVACY : TERMS;
   return (
-    <div className="px-4 pb-6">
-      <div className="mb-4 flex gap-2">
-        {[["privacy", ["Privacy policy", "निजता नीति"]], ["terms", ["Terms and conditions", "नियम और शर्तें"]]].map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className="rounded-md px-3 py-2 text-sm font-semibold"
+    <div className="px-4 pb-6 space-y-3">
+      <div className="flex gap-2">
+        {[["privacy", ["Privacy Policy", "निजता नीति"]], ["terms", ["Terms of Service", "नियम"]]].map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className="rounded-lg px-3 py-1.5 text-xs font-semibold"
             style={{
               background: tab === k ? c.greenSoft : c.surface, color: tab === k ? c.green : c.muted,
               border: `1px solid ${tab === k ? c.green : c.line}`,
@@ -2458,34 +2614,18 @@ function Legal({ c, t, lang, tab, setTab }) {
         ))}
       </div>
 
-      <Sheet c={c} className="p-5">
-        <p className="text-xs" style={{ color: c.muted }}>
-          {lang === 0 ? "Last updated 5 September 2026. Kisan Setu is a prototype built for Smart India Hackathon 2026 and is not yet operating commercially. These pages state the terms the service will run on."
-            : "अंतिम बदलाव 5 सितंबर 2026। किसान सेतु स्मार्ट इंडिया हैकाथॉन 2026 के लिए बनाया गया प्रोटोटाइप है और अभी व्यावसायिक रूप से नहीं चल रहा। ये पन्ने बताते हैं कि सेवा किन शर्तों पर चलेगी।"}
-        </p>
-        <div className="mt-4 space-y-5">
-          {doc.map((sec, i) => (
-            <div key={i}>
-              <h3 className="text-sm font-bold" style={{ color: c.ink }}>{sec.h[lang]}</h3>
-              <p className="mt-1 text-sm leading-relaxed" style={{ color: c.muted }}>{sec.p[lang]}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 rounded-md p-4" style={{ background: c.raise }}>
-          <h3 className="text-sm font-bold" style={{ color: c.ink }}>
-            {lang === 0 ? "Grievance officer" : "शिकायत अधिकारी"}
-          </h3>
-          <p className="mt-1 text-sm leading-relaxed" style={{ color: c.muted }}>
-            {lang === 0 ? "Name and contact details are published here before launch, as required. Acknowledgement within 48 hours, resolution within one month."
-              : "नाम और संपर्क शुरू होने से पहले यहाँ प्रकाशित किए जाएँगे, जैसा अनिवार्य है। 48 घंटे में पावती, एक माह में समाधान।"}
-          </p>
-        </div>
+      <Sheet c={c} className="p-4 space-y-3 text-xs">
+        {doc.map((sec, i) => (
+          <div key={i}>
+            <div className="font-bold text-sm" style={{ color: c.ink }}>{sec.h[lang]}</div>
+            <p className="mt-1 leading-relaxed" style={{ color: c.muted }}>{sec.p[lang]}</p>
+          </div>
+        ))}
       </Sheet>
     </div>
   );
 }
 
-/* ── responsive: one codebase, two shells ──────────────────── */
 function useViewport() {
   const [w, setW] = useState(typeof window === "undefined" ? 1280 : window.innerWidth);
   useEffect(() => {
@@ -2496,98 +2636,85 @@ function useViewport() {
   return w;
 }
 
-/* The web header. Same tabs, laid out along the top instead of the bottom. */
-function TopNav({ c, t, lang, setLang, dark, setDark, tabs, view, go, cartCount, role, openGate, addr, setAddr, mobilePreview, setMobilePreview }) {
+/* Web Header (Rule 4: Clean, left-aligned, popovers for secondary items) */
+function TopNav({ c, t, lang, setLang, dark, setDark, tabs, view, go, cartCount, role, pick, addr, setAddr, openLegal, mobilePreview, setMobilePreview }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="sticky top-0 z-30" style={{ background: c.bg, borderBottom: `1px solid ${c.line}` }}>
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3">
-        <button onClick={() => go(tabs[0][0])} className="flex shrink-0 items-center gap-2.5">
-          <Logo size={34} green={c.green} gold={c.goldBright} />
-          <span style={{ fontFamily: FD, fontWeight: 700, fontSize: 19, color: c.ink }}>{t("brand")}</span>
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-2.5">
+        <button onClick={() => go(tabs[0][0])} className="flex shrink-0 items-center gap-2">
+          <Logo size={28} green={c.green} gold={c.goldBright} />
+          <span style={{ fontFamily: FD, fontWeight: 700, fontSize: 18, color: c.ink }}>{t("brand")}</span>
         </button>
 
-        <nav className="ml-4 flex items-center gap-1">
+        {/* Minimal left-aligned tab navigation */}
+        <nav className="flex items-center gap-1">
           {tabs.filter(([id]) => id !== "cart").map(([id, label, Ic]) => {
             const on = view === id;
             return (
-              <button key={id} onClick={() => go(id)} className="relative flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-semibold"
+              <button key={id} onClick={() => go(id)} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold"
                 style={{ color: on ? c.green : c.muted, background: on ? c.greenSoft : "transparent" }}>
-                <Ic size={15} />{label}
+                <Ic size={14} />{label}
               </button>
             );
           })}
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2">
-          <span className="hidden items-center gap-1.5 rounded-md px-3 lg:flex"
-            style={{ background: c.surface, border: `1px solid ${c.line}`, height: 36 }}>
-            <MapPin size={13} style={{ color: c.green }} />
-            <input value={addr} onChange={e => setAddr(e.target.value)}
-              className="w-32 bg-transparent text-xs font-semibold outline-none" style={{ color: c.ink }} />
-          </span>
-          <button onClick={() => setMobilePreview(!mobilePreview)} title="Switch view"
-            className="grid place-items-center rounded-md"
-            style={{ width: 36, height: 36, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-            {mobilePreview ? <Monitor size={15} /> : <Smartphone size={15} />}
-          </button>
-          <button onClick={() => setLang(lang === 0 ? 1 : 0)} className="grid place-items-center rounded-md text-xs font-bold"
-            style={{ width: 36, height: 36, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-            {lang === 0 ? "अ" : "A"}
-          </button>
-          <button onClick={() => setDark(!dark)} className="grid place-items-center rounded-md"
-            style={{ width: 36, height: 36, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
+        {/* Action Controls & Profile Popover */}
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => setMobilePreview(!mobilePreview)} title="Toggle Handset Preview"
+            className="grid place-items-center rounded-lg"
+            style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
+            {mobilePreview ? <Monitor size={14} /> : <Smartphone size={14} />}
           </button>
           {role !== "farmer" && (
-            <button onClick={() => go("cart")} className="relative grid place-items-center rounded-md"
-              style={{ width: 36, height: 36, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-              <ShoppingCart size={15} />
+            <button onClick={() => go("cart")} className="relative grid place-items-center rounded-lg"
+              style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
+              <ShoppingCart size={14} />
               {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 grid place-items-center rounded-md text-xs font-bold"
-                  style={{ background: c.coral, color: "#fff", minWidth: 17, height: 17, fontSize: 10 }}>{cartCount}</span>
+                <span className="absolute -right-1 -top-1 grid place-items-center rounded-full text-xs font-bold"
+                  style={{ background: c.green, color: "#fff", minWidth: 16, height: 16, fontSize: 9 }}>{cartCount}</span>
               )}
             </button>
           )}
-          <button onClick={openGate} className="grid place-items-center overflow-hidden rounded-md"
-            style={{ width: 36, height: 36, border: `1px solid ${c.line}` }}>
-            {role === "farmer" ? <FarmerFace id={ME} size={34} c={c} />
-              : <span className="grid h-full w-full place-items-center" style={{ background: c.violetSoft, color: c.violet }}>
-                  <Users size={15} />
-                </span>}
+          <button onClick={() => setMenuOpen(true)} className="flex items-center gap-2 rounded-lg px-2.5 py-1"
+            style={{ background: c.surface, border: `1px solid ${c.line}` }}>
+            <InitialsAvatar id={role === "farmer" ? ME : null} size={24} c={c} />
+            <span className="text-xs font-semibold" style={{ color: c.ink }}>
+              {role === "farmer" ? "Farmer" : role === "retailer" ? "Retailer" : "Buyer"}
+            </span>
+            <ChevronDown size={13} style={{ color: c.muted }} />
           </button>
         </div>
       </div>
-      <BlockPrint c={c} col={c.wood} op={.22} h={10} />
+
+      {menuOpen && (
+        <AccountPopover c={c} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark}
+          role={role} pick={pick} addr={addr} setAddr={setAddr} openLegal={openLegal} close={() => setMenuOpen(false)} />
+      )}
     </header>
   );
 }
 
-/* ── seeds ─────────────────────────────────────────────────── */
+/* ── Seeds & Main App Entry ────────────────────────────────── */
 const BUYER_ORDERS = [
-  { id: 1, code: "KS-2418", fid: "f3", step: 4, date: "12 Sep", items: [{ id: "p8", qty: 10 }],
-    total: 520, transport: 113, farmerPayout: 507, pickup: 10, loss: .6, rated: false },
-  { id: 2, code: "KS-2415", fid: "f1", step: 2, date: "12 Sep", items: [{ id: "p1", qty: 6 }, { id: "p3", qty: 3 }],
-    total: 178, transport: 37, farmerPayout: 163, pickup: 9, loss: 0, rated: false },
-  { id: 3, code: "KS-2409", fid: "f5", step: 5, date: "10 Sep", items: [{ id: "p13", qty: 8 }, { id: "p14", qty: 1 }],
-    total: 976, transport: 205, farmerPayout: 958, pickup: 9, loss: 0, rated: true },
-];
-const FARM_ORDERS = [
-  { id: 11, code: "KS-2418", buyer: ["Neha Sharma, Indirapuram", "नेहा शर्मा, इंदिरापुरम"], step: 5, date: "13 Sep",
-    items: [{ id: "p1", qty: 8 }, { id: "p3", qty: 4 }], transport: 74, farmerPayout: 3560, pickup: 12, loss: 0, ratedBuyer: true },
-  { id: 12, code: "KS-2417", buyer: ["Gupta Sabzi Store, Vaishali", "गुप्ता सब्ज़ी स्टोर, वैशाली"], step: 2, date: "13 Sep",
-    items: [{ id: "p2", qty: 60 }], transport: 74, farmerPayout: 1260, pickup: 60, loss: 0, ratedBuyer: false },
-  { id: 13, code: "KS-2412", buyer: ["Arun Verma, Noida 62", "अरुण वर्मा, नोएडा 62"], step: 4, date: "12 Sep",
-    items: [{ id: "p1", qty: 25 }], transport: 86, farmerPayout: 450, pickup: 25, loss: 1.2, ratedBuyer: false },
+  { id: 1, code: "KS-2418", fid: "f3", step: 4, date: "12 Sep", items: [{ id: "p8", qty: 10 }], total: 520, transport: 113, farmerPayout: 507, pickup: 10, loss: .6, rated: false },
+  { id: 2, code: "KS-2415", fid: "f1", step: 2, date: "12 Sep", items: [{ id: "p1", qty: 6 }, { id: "p3", qty: 3 }], total: 178, transport: 37, farmerPayout: 163, pickup: 9, loss: 0, rated: false },
+  { id: 3, code: "KS-2409", fid: "f5", step: 5, date: "10 Sep", items: [{ id: "p13", qty: 8 }, { id: "p14", qty: 1 }], total: 976, transport: 205, farmerPayout: 958, pickup: 9, loss: 0, rated: true },
 ];
 
-/* ── app ───────────────────────────────────────────────────── */
+const FARM_ORDERS = [
+  { id: 11, code: "KS-2418", buyer: ["Neha Sharma, Indirapuram", "नेहा शर्मा, इंदिरापुरम"], step: 5, date: "13 Sep", items: [{ id: "p1", qty: 8 }, { id: "p3", qty: 4 }], transport: 74, farmerPayout: 3560, pickup: 12, loss: 0, ratedBuyer: true },
+  { id: 12, code: "KS-2417", buyer: ["Gupta Sabzi Store, Vaishali", "गुप्ता सब्ज़ी स्टोर, वैशाली"], step: 2, date: "13 Sep", items: [{ id: "p2", qty: 60 }], transport: 74, farmerPayout: 1260, pickup: 60, loss: 0, ratedBuyer: false },
+];
+
 export default function KisanSetu() {
   const [dark, setDark] = useState(false);
   const [lang, setLang] = useState(0);
   const [role, setRole] = useState(null);
   const [gate, setGate] = useState(false);
   const [view, setView] = useState("home");
-  const [stack, setStack] = useState(null);        // pushed screen over the tabs
+  const [stack, setStack] = useState(null);
   const [pid, setPid] = useState("p1");
   const [fid, setFid] = useState("f1");
   const [cat, setCat] = useState("all");
@@ -2595,10 +2722,10 @@ export default function KisanSetu() {
   const [cart, setCart] = useState([]);
   const [bOrders, setBOrders] = useState(BUYER_ORDERS);
   const [fOrders, setFOrders] = useState(FARM_ORDERS);
-  const [listings, setListings] = useState(
-    PRODUCTS.filter(p => p.fid === ME).map(p => ({ pid: p.id, rate: p.farmer, stock: p.stock, live: true })));
+  const [listings, setListings] = useState(PRODUCTS.filter(p => p.fid === ME).map(p => ({ pid: p.id, rate: p.farmer, stock: p.stock, live: true })));
   const [mobilePreview, setMobilePreview] = useState(false);
   const [legalTab, setLegalTab] = useState("privacy");
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const vw = useViewport();
   const desktop = vw >= 1024 && !mobilePreview;
 
@@ -2616,6 +2743,8 @@ export default function KisanSetu() {
   };
   const openProduct = id => { setPid(id); push("product"); };
   const openStore = id => { setFid(id); push("store"); };
+  const openLegal = tab => { setLegalTab(tab || "privacy"); push("legal"); };
+
   const addToCart = (id, q = role === "retailer" ? 50 : 1) =>
     setCart(cs => cs.find(x => x.id === id) ? cs.map(x => x.id === id ? { ...x, qty: x.qty + q } : x) : [...cs, { id, qty: q }]);
   const subFromCart = id => setCart(cs => cs.map(x => x.id === id ? { ...x, qty: x.qty - 1 } : x).filter(x => x.qty > 0));
@@ -2632,6 +2761,7 @@ export default function KisanSetu() {
     }, ...os]);
     setCart([]); go("orders");
   };
+
   const bump = (set, id) => set(os => os.map(o => o.id === id
     ? { ...o, step: Math.min(5, o.step + 1), loss: o.step + 1 === 4 && o.loss === 0 ? .4 : o.loss } : o));
 
@@ -2654,114 +2784,89 @@ export default function KisanSetu() {
   const titles = {
     home: farmer ? t("nav_f_home") : t("greet_sub"), shop: t("nav_b_market"), mandi: t("mandi_board_h"),
     orders: farmer ? t("nav_f_orders") : t("nav_b_orders"), cart: t("cart"),
-    produce: t("nav_f_produce"), earn: t("earn_h"), add: t("add_crop"),
-    product: PRODUCTS.find(p => p.id === pid).name[lang],
-    store: FARMERS.find(f => f.id === fid).store[lang],
-    legal: legalTab === "privacy" ? (lang === 0 ? "Privacy policy" : "निजता नीति")
-      : (lang === 0 ? "Terms and conditions" : "नियम और शर्तें"),
+    produce: t("nav_f_produce"), earn: t("earn_h"),
+    product: PRODUCTS.find(p => p.id === pid)?.name[lang],
+    store: FARMERS.find(f => f.id === fid)?.store[lang],
+    legal: legalTab === "privacy" ? "Privacy Policy" : "Terms & Conditions",
   };
   const cur = stack || view;
   const pushed = !!stack;
 
-  const legalLinks = (
-    <div className="mt-6 px-4 pb-2 text-center">
-      <p className="text-xs" style={{ color: c.muted }}>{t("demo_note")}</p>
-      <div className="mt-1.5 flex items-center justify-center gap-4">
-        {[["privacy", ["Privacy policy", "निजता नीति"]], ["terms", ["Terms and conditions", "नियम और शर्तें"]]].map(([k, l]) => (
-          <button key={k} onClick={() => { setLegalTab(k); push("legal"); }}
-            className="text-xs font-semibold underline" style={{ color: c.muted }}>{l[lang]}</button>
-        ))}
-      </div>
-    </div>
-  );
-
   const body = (
-    <div style={{ paddingBottom: desktop ? 24 : cur === "product" ? 120 : cur === "cart" ? 190 : 96 }}>
+    <div style={{ paddingBottom: desktop ? 24 : cur === "product" ? 110 : cur === "cart" ? 180 : 88 }}>
       {cur === "legal" ? <Legal c={c} t={t} lang={lang} tab={legalTab} setTab={setLegalTab} /> : farmer ? (
-            <>
-              {cur === "home" && <FarmerHome c={c} t={t} lang={lang} go={go} orders={fOrders}
-                listings={listings} startAdd={() => push("add")} />}
-              {cur === "produce" && <FarmerProduce c={c} t={t} lang={lang} listings={listings}
-                toggle={i => setListings(ls => ls.map((l, j) => j === i ? { ...l, live: !l.live } : l))}
-                startAdd={() => push("add")} />}
-              {cur === "orders" && <FarmerOrders c={c} t={t} lang={lang} orders={fOrders}
-                advance={id => bump(setFOrders, id)}
-                rate={id => setFOrders(os => os.map(o => o.id === id ? { ...o, ratedBuyer: true } : o))} />}
-              {cur === "earn" && <FarmerEarnings c={c} t={t} lang={lang} />}
-              {cur === "add" && <FarmerAdd c={c} t={t} lang={lang} close={() => { pop(); setView("produce"); }}
-                save={l => setListings(ls => [l, ...ls])} />}
-            </>
-          ) : (
-            <>
-              {cur === "home" && <BuyerHome c={c} t={t} lang={lang} go={go} openStore={openStore}
-                openProduct={openProduct} cart={cart} addToCart={addToCart} subFromCart={subFromCart} setCat={setCat} />}
-              {cur === "shop" && <Shop c={c} t={t} lang={lang} role={role} cat={cat} setCat={setCat}
-                openProduct={openProduct} openStore={openStore} cart={cart} addToCart={addToCart} subFromCart={subFromCart} />}
-              {cur === "mandi" && <MandiScreen c={c} t={t} lang={lang} openProduct={openProduct} />}
-              {cur === "orders" && <OrdersScreen c={c} t={t} lang={lang} orders={bOrders}
-                advance={id => bump(setBOrders, id)}
-                rate={id => setBOrders(os => os.map(o => o.id === id ? { ...o, rated: true } : o))} go={go} />}
-              {cur === "cart" && <CartScreen c={c} t={t} lang={lang} role={role} cart={cart} addToCart={addToCart}
-                subFromCart={subFromCart} remove={id => setCart(cs => cs.filter(x => x.id !== id))}
-                go={go} placeOrder={placeOrder} addr={addr} wide={desktop} />}
-              {cur === "product" && <ProductScreen c={c} t={t} lang={lang} role={role} pid={pid}
-                openStore={openStore} openProduct={openProduct} addToCart={addToCart} go={go} wide={desktop} />}
-              {cur === "store" && <StoreScreen c={c} t={t} lang={lang} fid={fid} openProduct={openProduct}
-                cart={cart} addToCart={addToCart} subFromCart={subFromCart} />}
-            </>
-          )}
-      {cur !== "legal" && !desktop && legalLinks}
+        <>
+          {cur === "home" && <FarmerHome c={c} t={t} lang={lang} go={go} orders={fOrders}
+            listings={listings} startAdd={() => setAddModalOpen(true)} wide={desktop} />}
+          {cur === "produce" && <FarmerProduce c={c} t={t} lang={lang} listings={listings}
+            toggle={i => setListings(ls => ls.map((l, j) => j === i ? { ...l, live: !l.live } : l))}
+            startAdd={() => setAddModalOpen(true)} />}
+          {cur === "orders" && <FarmerOrders c={c} t={t} lang={lang} orders={fOrders}
+            advance={id => bump(setFOrders, id)}
+            rate={id => setFOrders(os => os.map(o => o.id === id ? { ...o, ratedBuyer: true } : o))} />}
+          {cur === "earn" && <FarmerEarnings c={c} t={t} lang={lang} />}
+        </>
+      ) : (
+        <>
+          {cur === "home" && <BuyerHome c={c} t={t} lang={lang} role={role} go={go} openStore={openStore}
+            openProduct={openProduct} cart={cart} addToCart={addToCart} subFromCart={subFromCart} setCat={setCat} />}
+          {cur === "shop" && <Shop c={c} t={t} lang={lang} role={role} cat={cat} setCat={setCat}
+            openProduct={openProduct} openStore={openStore} cart={cart} addToCart={addToCart} subFromCart={subFromCart} />}
+          {cur === "mandi" && <MandiScreen c={c} t={t} lang={lang} openProduct={openProduct} />}
+          {cur === "orders" && <OrdersScreen c={c} t={t} lang={lang} orders={bOrders}
+            advance={id => bump(setBOrders, id)}
+            rate={id => setBOrders(os => os.map(o => o.id === id ? { ...o, rated: true } : o))} go={go} />}
+          {cur === "cart" && <CartScreen c={c} t={t} lang={lang} role={role} cart={cart} addToCart={addToCart}
+            subFromCart={subFromCart} remove={id => setCart(cs => cs.filter(x => x.id !== id))}
+            go={go} placeOrder={placeOrder} addr={addr} wide={desktop} />}
+          {cur === "product" && <ProductScreen c={c} t={t} lang={lang} role={role} pid={pid}
+            openStore={openStore} openProduct={openProduct} addToCart={addToCart} go={go} wide={desktop} />}
+          {cur === "store" && <StoreScreen c={c} t={t} lang={lang} fid={fid} openProduct={openProduct}
+            cart={cart} addToCart={addToCart} subFromCart={subFromCart} />}
+        </>
+      )}
     </div>
   );
 
-  /* ── web ── */
-  if (desktop) return (
-    <div style={{ fontFamily: FB, background: c.bg, color: c.ink, minHeight: "100vh" }}>
-      <TopNav c={c} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark} tabs={tabs}
-        view={view} go={go} cartCount={cartCount} role={role} openGate={() => setGate(true)}
-        addr={addr} setAddr={setAddr} mobilePreview={mobilePreview} setMobilePreview={setMobilePreview} />
-      <main className={"mx-auto px-2 pt-6 " + (["home", "shop", "store"].includes(cur) ? "max-w-6xl" : "max-w-3xl")}>
-        {pushed && (
-          <button onClick={pop} className="mb-4 ml-4 flex items-center gap-2 text-sm font-semibold" style={{ color: c.muted }}>
-            <ArrowLeft size={16} /> {t("back")}
-          </button>
-        )}
-        {body}
-      </main>
-      <footer className="mt-10" style={{ background: c.surface, borderTop: `1px solid ${c.line}` }}>
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-5 py-7">
-          <Logo size={28} green={c.green} gold={c.goldBright} />
-          <p className="max-w-xl text-xs leading-relaxed" style={{ color: c.muted }}>{t("demo_note")}</p>
-          <span className="ml-auto flex items-center gap-4">
-            {[["privacy", ["Privacy policy", "निजता नीति"]], ["terms", ["Terms and conditions", "नियम और शर्तें"]]].map(([k, l]) => (
-              <button key={k} onClick={() => { setLegalTab(k); push("legal"); }}
-                className="text-xs font-semibold underline" style={{ color: c.muted }}>{l[lang]}</button>
-            ))}
-            <span className="flex items-center gap-1.5 text-xs" style={{ color: c.muted }}>
-              <Smartphone size={13} />{lang === 0 ? "Also built for the phone" : "फ़ोन के लिए भी बना"}
-            </span>
-          </span>
-        </div>
-      </footer>
-    </div>
-  );
-
-  /* ── phone ── */
   return (
     <div style={{ fontFamily: FB }}>
-      <Phone c={c}>
-        <AppBar c={c} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark}
-          title={titles[cur]} addr={addr} role={role} openGate={pushed ? null : () => setGate(true)}
-          back={pushed ? pop : null}
-          right={vw >= 1024 ? (
-            <button onClick={() => setMobilePreview(false)} className="grid place-items-center rounded-md"
-              style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
-              <Monitor size={15} />
-            </button>
-          ) : null} />
-        {body}
-        {!pushed && <TabBar c={c} tabs={tabs} view={view} go={go} cartCount={cartCount} />}
-      </Phone>
+      {desktop ? (
+        <div style={{ background: c.bg, color: c.ink, minHeight: "100vh" }}>
+          <TopNav c={c} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark} tabs={tabs}
+            view={view} go={go} cartCount={cartCount} role={role} pick={pick}
+            addr={addr} setAddr={setAddr} openLegal={openLegal}
+            mobilePreview={mobilePreview} setMobilePreview={setMobilePreview} />
+          <main className={"mx-auto px-4 pt-6 " + (["home", "shop", "store"].includes(cur) ? "max-w-6xl" : "max-w-3xl")}>
+            {pushed && (
+              <button onClick={pop} className="mb-4 flex items-center gap-2 text-xs font-semibold" style={{ color: c.muted }}>
+                <ArrowLeft size={14} /> {t("back")}
+              </button>
+            )}
+            {body}
+          </main>
+        </div>
+      ) : (
+        <Phone c={c}>
+          <AppBar c={c} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark}
+            title={titles[cur]} addr={addr} role={role} pick={pick} openLegal={openLegal}
+            back={pushed ? pop : null}
+            right={vw >= 1024 ? (
+              <button onClick={() => setMobilePreview(false)} className="grid place-items-center rounded-lg"
+                style={{ width: 34, height: 34, background: c.surface, border: `1px solid ${c.line}`, color: c.ink }}>
+                <Monitor size={14} />
+              </button>
+            ) : null} />
+          {body}
+          {!pushed && <TabBar c={c} tabs={tabs} view={view} go={go} cartCount={cartCount} />}
+        </Phone>
+      )}
+
+      {/* Complex Input Modal for Add Crop (Rule 5) */}
+      {addModalOpen && (
+        <AddCropModal c={c} t={t} lang={lang} close={() => setAddModalOpen(false)}
+          save={l => setListings(ls => [l, ...ls])} />
+      )}
     </div>
   );
 }
+
