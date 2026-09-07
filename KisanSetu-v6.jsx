@@ -22,6 +22,7 @@ import {
 
 const FD = `"Playfair Display","Tiro Devanagari Hindi",Georgia,"Noto Serif Devanagari",serif`;
 const FB = `Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif`;
+const BASE_PATH = import.meta.env.BASE_URL || "/";
 
 /* Cohesive Organic & Slate Base Scheme */
 const PALETTE = {
@@ -445,7 +446,7 @@ function Produce({ id, size = 44, bg = "white", vector = false, className = "" }
   if (!vector && !error && id) {
     return (
       <img
-        src={`./produce/${folder}/${id}.jpg`}
+        src={`${BASE_PATH}produce/${folder}/${id}.jpg`}
         alt={id}
         onError={() => setError(true)}
         className={"object-contain " + className}
@@ -1216,7 +1217,7 @@ function BuyerHome({ c, t, lang, role, go, openStore, openProduct, cart, addToCa
           {/* Image layer anchored to right with full-height cover to remove any top gap */}
           <div className="absolute right-0 top-0 bottom-0 w-full sm:w-7/12 md:w-3/5 lg:w-3/5 pointer-events-none overflow-hidden">
             <img
-              src={isShopkeeper ? "./hero-mango.jpg" : "./hero-farmer.jpg"}
+              src={isShopkeeper ? `${BASE_PATH}hero-mango.jpg` : `${BASE_PATH}hero-farmer.jpg`}
               alt={isShopkeeper ? "Farmer holding crate of fresh orchard mangoes" : "Farmer holding basket of fresh tomatoes"}
               className="h-full w-full object-cover"
               style={{ objectPosition: "85% 30%" }}
@@ -1720,13 +1721,13 @@ const big = { fontFamily: FD, fontWeight: 700 };
 
 /* ── Weather Visual Helper ─────────────────────────────────── */
 function getWeatherVisuals(code, lang = 0) {
-  if (code === 0) return { label: lang === 0 ? "Clear Sky" : "साफ़ आसमान", Icon: Sun, color: "#F59E0B", bg: "./weather/sunny.jpg" };
-  if ([1, 2].includes(code)) return { label: lang === 0 ? "Partly Cloudy" : "आंशिक बादल", Icon: CloudSun, color: "#FBBF24", bg: "./weather/clear.jpg" };
-  if (code === 3) return { label: lang === 0 ? "Overcast" : "घने बादल", Icon: Cloud, color: "#94A3B8", bg: "./weather/cloudy.jpg" };
-  if ([45, 48].includes(code)) return { label: lang === 0 ? "Foggy" : "कोहरा", Icon: Cloud, color: "#94A3B8", bg: "./weather/cloudy.jpg" };
-  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { label: lang === 0 ? "Rain / Showers" : "बारिश", Icon: CloudRain, color: "#60A5FA", bg: "./weather/rain.jpg" };
-  if ([95, 96, 99].includes(code)) return { label: lang === 0 ? "Thunderstorm" : "तूफ़ान व गरज", Icon: CloudLightning, color: "#C084FC", bg: "./weather/cloudy.jpg" };
-  return { label: lang === 0 ? "Mild" : "सामान्य", Icon: CloudSun, color: "#4ADE80", bg: "./weather/clear.jpg" };
+  if (code === 0) return { label: lang === 0 ? "Clear Sky" : "साफ़ आसमान", Icon: Sun, color: "#F59E0B", bg: `${BASE_PATH}weather/sunny.jpg` };
+  if ([1, 2].includes(code)) return { label: lang === 0 ? "Partly Cloudy" : "आंशिक बादल", Icon: CloudSun, color: "#FBBF24", bg: `${BASE_PATH}weather/clear.jpg` };
+  if (code === 3) return { label: lang === 0 ? "Overcast" : "घने बादल", Icon: Cloud, color: "#94A3B8", bg: `${BASE_PATH}weather/cloudy.jpg` };
+  if ([45, 48].includes(code)) return { label: lang === 0 ? "Foggy" : "कोहरा", Icon: Cloud, color: "#94A3B8", bg: `${BASE_PATH}weather/cloudy.jpg` };
+  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { label: lang === 0 ? "Rain / Showers" : "बारिश", Icon: CloudRain, color: "#60A5FA", bg: `${BASE_PATH}weather/rain.jpg` };
+  if ([95, 96, 99].includes(code)) return { label: lang === 0 ? "Thunderstorm" : "तूफ़ान व गरज", Icon: CloudLightning, color: "#C084FC", bg: `${BASE_PATH}weather/cloudy.jpg` };
+  return { label: lang === 0 ? "Mild" : "सामान्य", Icon: CloudSun, color: "#4ADE80", bg: `${BASE_PATH}weather/clear.jpg` };
 }
 
 /* ── Auto-Sliding Farmer Hero Carousel (2 Slides) ─────────── */
@@ -1834,7 +1835,7 @@ function FarmerHeroCarousel({ c, t, lang, go, onRainAlert, wide }) {
             {/* Photo on right */}
             <div className="absolute right-0 top-0 bottom-0 w-3/5 pointer-events-none overflow-hidden">
               <img
-                src="./farmer-family.jpg"
+                src={`${BASE_PATH}farmer-family.jpg`}
                 alt="Farmer family in the field"
                 className="h-full w-full object-cover"
                 style={{ objectPosition: "52% 10%" }}
@@ -1883,7 +1884,7 @@ function FarmerHeroCarousel({ c, t, lang, go, onRainAlert, wide }) {
             {/* Full coverage photo: Natural sunlight, NO green overlay on the family */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
               <img
-                src="./farmer-family.jpg"
+                src={`${BASE_PATH}farmer-family.jpg`}
                 alt="Farmer family in the field"
                 className="h-full w-full object-cover"
                 style={{ objectPosition: "52% 8%" }}
@@ -1938,7 +1939,7 @@ function FarmerHeroCarousel({ c, t, lang, go, onRainAlert, wide }) {
         {/* Weather Background Image with glassmorphism gradient scrim */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <img
-            src={currentVisual.bg || "./weather-bg.jpg"}
+            src={currentVisual.bg || `${BASE_PATH}weather-bg.jpg`}
             alt="Weather Forecast Background"
             className="h-full w-full object-cover transition-all duration-1000 scale-105"
             style={{ objectPosition: "center 38%" }}
